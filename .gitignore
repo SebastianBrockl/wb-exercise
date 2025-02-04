@@ -1,0 +1,60 @@
+# Compiled object files
+*.o
+*.obj
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Compiled Static libraries
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
+
+# Debug files
+*.dSYM/
+*.su
+*.idb
+*.pdb
+
+# Generated files
+*.gcno
+*.gcda
+*.gcov
+
+# CMake generated files
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+CMakeLists.txt.user
+
+# Code::Blocks generated files
+*.depend
+*.layout
+*.layout.*
+*.cbp.*
+*.depend.*
+
+# Qt generated files
+*.moc
+*.qrc
+*.ui
+
+# Visual Studio Code
+.vscode/
+
+# Other
+*.log
+*.swp
+*~
+
+build/
