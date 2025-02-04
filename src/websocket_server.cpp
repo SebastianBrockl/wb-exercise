@@ -9,6 +9,12 @@ void WebSocketServer::on_message(websocketpp::connection_hdl hdl, server_t::mess
     std::cout << "Received incoming message: " << msg->get_payload() << std::endl;
 }
 
+void WebSocketServer::on_open(websocketpp::connection_hdl hdl) {
+    auto connection = m_server.get_con_from_hdl(hdl);
+    std::cout << "New connection from " << connection->get_remote_endpoint() << std::endl;
+    m_connections.push_back(connection);
+}
+
 /**
  * Start the server on the specified port.
  */
