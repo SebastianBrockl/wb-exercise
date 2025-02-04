@@ -16,8 +16,8 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
     set(CMAKE_CXX_COMPILER arm-linux-gnueabihf-g++)
 endif()
 
-# Enable all warnings and optimization
-#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -O2")
+# Enable optimization
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2")
 
 set(DOCKER_TAG "latest")
 set(DOCKER_IMAGE "${LOCAL_DOCKER_REGISTRY}/mistral-demo:${DOCKER_TAG}")
@@ -33,6 +33,7 @@ find_package(Boost REQUIRED COMPONENTS system)
 include_directories(${Boost_INCLUDE_DIRS})
 
 add_executable(mistral-demo src/main.cpp src/websocket_server.cpp)
+target_compile_options(mistral-demo PRIVATE -Wall -Wextra -Werror -Wno-unused-parameter -Wno-unused-variable)
 target_link_libraries(mistral-demo ${Boost_LIBRARIES} -static-libgcc -static-libstdc++ -static)
 
 # Custom command to build Docker image
