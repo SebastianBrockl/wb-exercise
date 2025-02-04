@@ -6,7 +6,7 @@ push:
 	mkdir -p $(BUILD_DIR)/bin
 	cd $(BUILD_DIR) && cmake .. 
 	cd ..
-	cmake --build $(BUILD_DIR) --target docker-push -v
+	cmake --build $(BUILD_DIR) --target docker-push
 
 # Clean build files
 clean:
