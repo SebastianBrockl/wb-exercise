@@ -5,7 +5,8 @@ project(mistral-demo)
 if(DEFINED ENV{LOCAL_DOCKER_REGISTRY})
     set(LOCAL_DOCKER_REGISTRY "$ENV{LOCAL_DOCKER_REGISTRY}")
 else()
-    set(LOCAL_DOCKER_REGISTRY "registry.birdo.local")
+    ## make sure you are logged in using an personal access token with correct permissions!
+    set(LOCAL_DOCKER_REGISTRY "ghcr.io/sebastianbrockl")
 endif()
 
 set(CMAKE_CXX_STANDARD 17)
