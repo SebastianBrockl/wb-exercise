@@ -4,6 +4,7 @@
 #include "websocket_server.h"
 #include "uart_connection.h"
 #include "RadarConfig.h"
+#include "data_uart.h"
 #include <boost/asio.hpp>
 #include <thread>
 
@@ -30,6 +31,7 @@ private:
     RadarConfig m_radar_config;
     WebSocketServer m_ws_server;
 //    UARTConnection m_uart_connection;
+    DataUART m_data_uart;
     std::thread m_ws_thread;
     std::thread m_processing_thread;
 };

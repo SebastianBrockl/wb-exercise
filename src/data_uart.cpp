@@ -3,6 +3,9 @@
 DataUART::DataUART(boost::asio::io_context& io_context, const std::string& port, uint32_t baud_rate)
     : m_serial_port(io_context, port), m_strand(io_context.get_executor()) {
     m_serial_port.set_option(boost::asio::serial_port_base::baud_rate(baud_rate));
+    std::cout << "DataUART initialized" << std::endl;
+    std::cout << "Data UART Port: " << port << std::endl;
+    std::cout << "Data UART Baud Rate: " << baud_rate << std::endl;
 }
 
 void DataUART::start_async_read() {

@@ -18,7 +18,8 @@ Controller::Controller(
         m_write_port(write_port), 
         m_write_baudrate(write_baudrate), 
         m_websocket_port(websocket_port), 
-        m_ws_server(io_context, websocket_port)
+        m_ws_server(io_context, websocket_port),
+        m_data_uart(io_context, read_port, read_baudrate)
         // , 
         // m_uart_connection(
         //     io_context, 

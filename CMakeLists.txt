@@ -34,7 +34,7 @@ find_package(Boost REQUIRED COMPONENTS system)
 find_package(nlohmann_json REQUIRED)
 include_directories(${Boost_INCLUDE_DIRS})
 
-add_executable(mistral-demo src/main.cpp src/websocket_server.cpp src/uart_connection.cpp src/util.cpp src/RadarConfig.cpp src/controller.cpp)
+add_executable(mistral-demo src/main.cpp src/websocket_server.cpp src/uart_connection.cpp src/util.cpp src/RadarConfig.cpp src/controller.cpp src/data_uart.cpp)
 target_compile_options(mistral-demo PRIVATE -Wall -Wextra -Werror -Wno-unused-parameter -Wno-unused-variable)
 target_link_libraries(mistral-demo ${Boost_LIBRARIES} nlohmann_json::nlohmann_json -static-libgcc -static-libstdc++ -static)
 
