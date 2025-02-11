@@ -1,7 +1,7 @@
 #include "websocket_server.h"
 
-WebSocketServer::WebSocketServer() {
-    m_server.init_asio();
+WebSocketServer::WebSocketServer(boost::asio::io_context& io_context) {
+    m_server.init_asio(&io_context);
     m_server.set_message_handler(std::bind(&WebSocketServer::on_message, this, std::placeholders::_1, std::placeholders::_2));
     m_server.set_open_handler(std::bind(&WebSocketServer::on_open, this, std::placeholders::_1));
     m_server.set_close_handler(std::bind(&WebSocketServer::on_close, this, std::placeholders::_1));
@@ -57,11 +57,10 @@ void WebSocketServer::run(uint16_t port) {
 
 void WebSocketServer::broadcast(const std::string& message) {
     for (const auto& connection : m_connections) {
-        if(connection->get_state() == websocketpp::session::state::closed) {
+        if (connection->get_state() == websocketpp::session::state::closed) {
             // cleanup for sanity & paranoia, on_close() should have already triggered
             erase(connection);
-        }
-        else {
+        } else {
             m_server.send(connection, message, websocketpp::frame::opcode::text);
         }
     }

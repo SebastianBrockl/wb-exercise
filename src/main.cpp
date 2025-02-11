@@ -1,8 +1,10 @@
 #include "websocket_server.h"
 #include "util.h"
 #include "RadarConfig.h"
+#include "uart_connection.h"
 #include <iostream>
 #include <getopt.h>
+#include <thread>
 
 void print_usage() {
     std::cout << "Usage: mistral-demo [options]\n"
@@ -14,6 +16,34 @@ void print_usage() {
               << "  --write_baudrate <baud>   Write UART baudrate (default: 9600)\n"
               << "  --websocket_port <port>   WebSocket server port (default: 9002)\n"
               << std::endl;
+}
+
+void process_buffer(UARTConnection& uart, WebSocketServer& ws_server) {
+    while (true) {
+        std::vector<char> buffer;
+        {
+            std::unique_lock<std::mutex> lock(uart.m_mutex);
+            uart.m_cond_var.wait(lock, [&uart] { return !uart.m_buffer_queue.empty(); });
+            buffer = std::move(uart.m_buffer_queue.front());
+            uart.m_buffer_queue.pop();
+        }
+
+        // Process the buffer and broadcast to WebSocket clients
+        std::string bitstream(buffer.begin(), buffer.end());
+        std::string magic_string = "MAGIC"; // Replace with your actual magic string
+        size_t pos;
+        while ((pos = bitstream.find(magic_string)) != std::string::npos) {
+            std::string message = bitstream.substr(0, pos);
+            bitstream.erase(0, pos + magic_string.length());
+
+            // Map the message into an object (example object)
+            nlohmann::json message_json;
+            message_json["data"] = message;
+
+            // Broadcast the message JSON to all connected WebSockets
+            ws_server.broadcast(message_json.dump());
+        }
+    }
 }
 
 int main(int argc, char* argv[]) {
@@ -79,9 +109,27 @@ int main(int argc, char* argv[]) {
     std::cout << radarConfig.to_json_pretty() << std::endl;
 
     // Setup websocket server
+    boost::asio::io_context io_context;
     std::cout << "Starting WebSocket server" << std::endl;
-    WebSocketServer ws_server;
-    ws_server.run(websocket_port); // Run WebSocket server on the specified port
+    WebSocketServer ws_server(io_context);
+    std::thread ws_thread([&ws_server, websocket_port]() {
+        ws_server.run(websocket_port);
+    });
+
+    // Setup UART connection
+    UARTConnection uart(io_context, write_port, write_baudrate, read_port, read_baudrate);
+
+    // Write configuration to UART
+    uart.write_config(radarConfig);
+
+    // Start a thread to process the buffer and broadcast to WebSocket clients
+    std::thread processing_thread(process_buffer, std::ref(uart), std::ref(ws_server));
+
+    // Read bitstream from UART
+    uart.read_bitstream(ws_server);
+
+    processing_thread.join();
+    ws_thread.join();
 
     return 0;
 }
