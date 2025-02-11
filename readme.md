@@ -18,5 +18,6 @@ sudo apt-get install -y \
     cmake \
     git \
     libboost-all-dev \
-    libwebsocketpp-dev
+    libwebsocketpp-dev \
+    libspdlog-dev
 ```

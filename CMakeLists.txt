@@ -33,7 +33,7 @@ set(Boost_USE_STATIC_LIBS ON)
 find_package(Boost REQUIRED COMPONENTS system)
 include_directories(${Boost_INCLUDE_DIRS})
 
-add_executable(mistral-demo src/main.cpp src/websocket_server.cpp)
+add_executable(mistral-demo src/main.cpp src/websocket_server.cpp src/uart_connection.cpp src/util.cpp)
 target_compile_options(mistral-demo PRIVATE -Wall -Wextra -Werror -Wno-unused-parameter -Wno-unused-variable)
 target_link_libraries(mistral-demo ${Boost_LIBRARIES} -static-libgcc -static-libstdc++ -static)
 
