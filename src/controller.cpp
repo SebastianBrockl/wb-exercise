@@ -34,10 +34,13 @@ Controller::Controller(
     std::cout << "RadarConfig loaded" << std::endl;
     // TODO: this should be logged only in debug profile
     std::cout << m_radar_config.toString() << std::endl;
-    std::cout << m_radar_config.to_json_pretty() << std::endl;
+//    std::cout << m_radar_config.to_json_pretty() << std::endl;
 
     // TODO setup config write as an asynch operation
         // callback should print the written config
+
+    // setup data uart read on asio run
+    m_io_context.post([this](){m_data_uart.start_async_read();});
 }
 
 void Controller::run() {
