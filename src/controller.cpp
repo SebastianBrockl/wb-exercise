@@ -74,6 +74,14 @@ void Controller::write_config_callback(const boost::system::error_code &error, s
     }
 }
 
+void Controller::stop()
+{
+    m_ws_server.stop();
+    m_io_context.stop();
+//    m_processing_thread.join();
+//    m_ws_thread.join();
+}
+
 // void Controller::process_buffer() {
 //     while (true) {
 //         std::vector<char> buffer;

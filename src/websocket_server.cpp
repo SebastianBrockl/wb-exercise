@@ -71,3 +71,11 @@ void WebSocketServer::broadcast(const std::string& message) {
         }
     }
 }
+
+void WebSocketServer::stop()
+{
+    // close open connections for graceful shutdown
+    for (const auto& connection : m_connections) {
+        m_server.close(connection, websocketpp::close::status::going_away, "Server shutting down");
+    }
+}

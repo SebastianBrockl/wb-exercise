@@ -24,6 +24,8 @@ public:
     void run(uint16_t port);
     // broadcast message to all connected clients
     void broadcast(const std::string& message);
+    // gracefully stop the server
+    void stop();
 
 private:
     void erase(websocketpp::connection_hdl hdl);

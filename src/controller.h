@@ -13,6 +13,8 @@ public:
     void run();
     void async_write_config(const RadarConfig& config);
     void write_config_callback(const boost::system::error_code& error, std::size_t bytes_transferred);
+    // best attempt at gracefull shutdown
+    void stop();
 
 private:
     //void process_buffer();
