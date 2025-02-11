@@ -12,6 +12,7 @@ void print_usage() {
               << "  --write_port <port>       Write UART interface (default: /dev/ttyUSB1)\n"
               << "  --read_baudrate <baud>    Read UART baudrate (default: 9600)\n"
               << "  --write_baudrate <baud>   Write UART baudrate (default: 9600)\n"
+              << "  --websocket_port <port>   WebSocket server port (default: 9002)\n"
               << std::endl;
 }
 
@@ -21,6 +22,7 @@ int main(int argc, char* argv[]) {
     std::string write_port = "/dev/ttyUSB1";
     int read_baudrate = 9600;
     int write_baudrate = 9600;
+    int websocket_port = 9002;
 
     static struct option long_options[] = {
         {"config_path", required_argument, 0, 'c'},
@@ -28,12 +30,13 @@ int main(int argc, char* argv[]) {
         {"write_port", required_argument, 0, 'w'},
         {"read_baudrate", required_argument, 0, 'b'},
         {"write_baudrate", required_argument, 0, 'a'},
+        {"websocket_port", required_argument, 0, 'p'},
         {0, 0, 0, 0}
     };
 
     int opt;
     int option_index = 0;
-    while ((opt = getopt_long(argc, argv, "c:r:w:b:a:", long_options, &option_index)) != -1) {
+    while ((opt = getopt_long(argc, argv, "c:r:w:b:a:p:", long_options, &option_index)) != -1) {
         switch (opt) {
             case 'c':
                 config_path = optarg;
@@ -50,6 +53,9 @@ int main(int argc, char* argv[]) {
             case 'a':
                 write_baudrate = std::stoi(optarg);
                 break;
+            case 'p':
+                websocket_port = std::stoi(optarg);
+                break;
             default:
                 print_usage();
                 return 1;
@@ -62,7 +68,7 @@ int main(int argc, char* argv[]) {
     std::cout << "Read baudrate: " << read_baudrate << std::endl;
     std::cout << "Write port: " << write_port << std::endl;
     std::cout << "Write baudrate: " << write_baudrate << std::endl;
-
+    std::cout << "WebSocket port: " << websocket_port << std::endl;
 
     // Load configuration file as RadarConfig object
     RadarConfig radarConfig;
@@ -75,7 +81,7 @@ int main(int argc, char* argv[]) {
     // Setup websocket server
     std::cout << "Starting WebSocket server" << std::endl;
     WebSocketServer ws_server;
-    ws_server.run(9002); // Run WebSocket server on port 9002
+    ws_server.run(websocket_port); // Run WebSocket server on the specified port
 
     return 0;
 }
