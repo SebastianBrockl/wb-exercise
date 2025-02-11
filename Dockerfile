@@ -3,6 +3,7 @@ FROM arm32v7/debian:latest
 WORKDIR /app
 
 COPY build/bin/mistral-demo /usr/local/bin/mistral-demo
+COPY default-config.cfg /app/default-config.cfg
 
 RUN chmod +x /usr/local/bin/mistral-demo
 
