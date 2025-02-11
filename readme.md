@@ -1,5 +1,26 @@
 # Title
 
+## Running the image
+
+### prerequisites
+
+
+✅ Raspberry pi with mistral devboard connected
+
+✅ access to the `ghcr.io/sebastianbrockl` registry
+
+✅ pull the latest image with `docker pull ghcr.io/sebastianbrockl/mistral-demo:latest`
+
+### Running the container
+
+Run the container with:
+
+```bash
+docker run --rm -p 9002:9002 ghcr.io/sebastianbrockl/mistral-demo:latest
+```
+
+The container will open a websocket server on port 9002 for broadcasting TLV data
+
 ## build prerequisites
 
 ✅ Ensure you have docker with buildx installed
