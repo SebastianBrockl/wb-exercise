@@ -26,6 +26,7 @@ docker run --rm -it \
   --device="$config_device" \
   --device="$data_device" \
   ghcr.io/sebastianbrockl/mistral-demo:latest \
+  /usr/local/bin/mistral-demo \
   --data_port "$data_device" \
   --data_baudrate 921600 \
   --config_port "$config_device" \
