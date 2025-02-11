@@ -36,11 +36,7 @@ void RadarConfig::parseLine(const std::string& line) {
     std::string key;
     iss >> key;
 
-    if (key == "sensorStop") {
-        sensorStop = line;
-    } else if (key == "flushCfg") {
-        flushCfg = line;
-    } else if (key == "dfeDataOutputMode") {
+    if (key == "dfeDataOutputMode") {
         iss >> dfeDataOutputMode;
     } else if (key == "channelCfg") {
         channelCfg = std::vector<int>(std::istream_iterator<int>(iss), std::istream_iterator<int>());
@@ -98,16 +94,12 @@ void RadarConfig::parseLine(const std::string& line) {
         trackingCfg = std::vector<int>(std::istream_iterator<int>(iss), std::istream_iterator<int>());
     } else if (key == "presenceBoundaryBox") {
         presenceBoundaryBox = std::vector<double>(std::istream_iterator<double>(iss), std::istream_iterator<double>());
-    } else if (key == "sensorStart") {
-        sensorStart = line;
-    }
+    } 
 }
 
 std::string RadarConfig::toString() const {
     std::ostringstream oss;
 
-    oss << "sensorStop: " << sensorStop << "\n";
-    oss << "flushCfg: " << flushCfg << "\n";
     oss << "dfeDataOutputMode: " << dfeDataOutputMode << "\n";
     oss << "channelCfg: ";
     for (const auto& val : channelCfg) oss << val << " ";
@@ -165,7 +157,6 @@ std::string RadarConfig::toString() const {
     for (const auto& val : trackingCfg) oss << val << " ";
     oss << "\npresenceBoundaryBox: ";
     for (const auto& val : presenceBoundaryBox) oss << val << " ";
-    oss << "\nsensorStart: " << sensorStart << "\n";
 
     return oss.str();
 }
@@ -173,8 +164,6 @@ std::string RadarConfig::toString() const {
 nlohmann::json RadarConfig::to_json() const {
     nlohmann::json j;
 
-    j["sensorStop"] = sensorStop;
-    j["flushCfg"] = flushCfg;
     j["dfeDataOutputMode"] = dfeDataOutputMode;
     j["channelCfg"] = channelCfg;
     j["adcCfg"] = adcCfg;
@@ -204,7 +193,6 @@ nlohmann::json RadarConfig::to_json() const {
     j["maxAcceleration"] = maxAcceleration;
     j["trackingCfg"] = trackingCfg;
     j["presenceBoundaryBox"] = presenceBoundaryBox;
-    j["sensorStart"] = sensorStart;
 
     return j;
 }

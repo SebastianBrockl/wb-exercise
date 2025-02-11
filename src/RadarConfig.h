@@ -17,8 +17,6 @@ public:
     std::string to_json_pretty() const;
 
     // Configuration parameters
-    std::string sensorStop;
-    std::string flushCfg;
     int dfeDataOutputMode;
     std::vector<int> channelCfg;
     std::vector<int> adcCfg;
@@ -48,7 +46,6 @@ public:
     std::vector<double> maxAcceleration;
     std::vector<int> trackingCfg;
     std::vector<double> presenceBoundaryBox;
-    std::string sensorStart;
 
 private:
     void parseLine(const std::string& line);
