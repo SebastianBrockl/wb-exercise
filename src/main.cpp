@@ -18,10 +18,10 @@ void print_usage()
     std::cout << "Usage: mistral-demo [options]\n"
               << "Options:\n"
               << "  --config_path <path>      Path to the default config file (default: /app/default-config.cfg)\n"
-              << "  --read_port <port>        Read UART interface (default: /dev/ttyUSB0)\n"
-              << "  --write_port <port>       Write UART interface (default: /dev/ttyUSB1)\n"
-              << "  --read_baudrate <baud>    Read UART baudrate (default: 9600)\n"
-              << "  --write_baudrate <baud>   Write UART baudrate (default: 9600)\n"
+              << "  --data_port <port>        Read UART interface (default: /dev/ttyUSB0)\n"
+              << "  --config_port <port>      Write UART interface (default: /dev/ttyUSB1)\n"
+              << "  --data_baudrate <baud>    Read UART baudrate (default: 921600)\n"
+              << "  --config_baudrate <baud>  Write UART baudrate (default: 115200)\n"
               << "  --websocket_port <port>   WebSocket server port (default: 9002)\n"
               << std::endl;
 }
@@ -29,18 +29,18 @@ void print_usage()
 int main(int argc, char *argv[])
 {
     std::string config_path = "/app/default-config.cfg";
-    std::string read_port = "/dev/ttyUSB0";
-    std::string write_port = "/dev/ttyUSB1";
-    int read_baudrate = 921600;
-    int write_baudrate = 115200;
+    std::string data_port = "/dev/ttyUSB0";
+    std::string config_port = "/dev/ttyUSB1";
+    int data_baudrate = 921600;
+    int config_baudrate = 115200;
     uint16_t websocket_port = 9002;
 
     static struct option long_options[] = {
         {"config_path", required_argument, 0, 'c'},
-        {"read_port", required_argument, 0, 'r'},
-        {"write_port", required_argument, 0, 'w'},
-        {"read_baudrate", required_argument, 0, 'b'},
-        {"write_baudrate", required_argument, 0, 'a'},
+        {"data_port", required_argument, 0, 'r'},
+        {"config_port", required_argument, 0, 'w'},
+        {"data_baudrate", required_argument, 0, 'b'},
+        {"config_baudrate", required_argument, 0, 'a'},
         {"websocket_port", required_argument, 0, 'p'},
         {0, 0, 0, 0}};
 
@@ -54,16 +54,16 @@ int main(int argc, char *argv[])
             config_path = optarg;
             break;
         case 'r':
-            read_port = optarg;
+            data_port = optarg;
             break;
         case 'w':
-            write_port = optarg;
+            config_port = optarg;
             break;
         case 'b':
-            read_baudrate = std::stoi(optarg);
+            data_baudrate = std::stoi(optarg);
             break;
         case 'a':
-            write_baudrate = std::stoi(optarg);
+            config_baudrate = std::stoi(optarg);
             break;
         case 'p':
             websocket_port = std::stoi(optarg);
@@ -76,10 +76,10 @@ int main(int argc, char *argv[])
 
     std::cout << "Starting application" << std::endl;
     std::cout << "Config path: " << config_path << std::endl;
-    std::cout << "Read port: " << read_port << std::endl;
-    std::cout << "Read baudrate: " << read_baudrate << std::endl;
-    std::cout << "Write port: " << write_port << std::endl;
-    std::cout << "Write baudrate: " << write_baudrate << std::endl;
+    std::cout << "Read port: " << data_port << std::endl;
+    std::cout << "Read baudrate: " << data_baudrate << std::endl;
+    std::cout << "Write port: " << config_port << std::endl;
+    std::cout << "Write baudrate: " << config_baudrate << std::endl;
     std::cout << "WebSocket port: " << websocket_port << std::endl;
 
     // Setup boost::asio::io_context
@@ -91,7 +91,7 @@ int main(int argc, char *argv[])
                        { handleSignal(io_context, error, signal_number); });
 
     // Create and run the controller
-    Controller controller(io_context, config_path, read_port, read_baudrate, write_port, write_baudrate, websocket_port);
+    Controller controller(io_context, config_path, data_port, data_baudrate, config_port, config_baudrate, websocket_port);
     // controller.run();
     io_context.run();
 

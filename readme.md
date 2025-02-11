@@ -26,7 +26,7 @@ Run the container with:
 
 ```bash
 docker run --rm -it \
-  -p 9002:9002
+  -p 9002:9002 \
   --device=/dev/serial/by-id/usb-Silicon_Labs_CP2105_Dual_USB_to_UART_Bridge_Controller_01448E45-if00-port0 \
   --device=/dev/serial/by-id/usb-Silicon_Labs_CP2105_Dual_USB_to_UART_Bridge_Controller_01448E45-if01-port0 \
   ghcr.io/sebastianbrockl/mistral-demo:latest
