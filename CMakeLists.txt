@@ -31,11 +31,12 @@ get_filename_component(PROJECT_ROOT ${CMAKE_SOURCE_DIR} ABSOLUTE)
 
 set(Boost_USE_STATIC_LIBS ON)
 find_package(Boost REQUIRED COMPONENTS system)
+find_package(nlohmann_json REQUIRED)
 include_directories(${Boost_INCLUDE_DIRS})
 
 add_executable(mistral-demo src/main.cpp src/websocket_server.cpp src/uart_connection.cpp src/util.cpp src/RadarConfig.cpp)
 target_compile_options(mistral-demo PRIVATE -Wall -Wextra -Werror -Wno-unused-parameter -Wno-unused-variable)
-target_link_libraries(mistral-demo ${Boost_LIBRARIES} -static-libgcc -static-libstdc++ -static)
+target_link_libraries(mistral-demo ${Boost_LIBRARIES} nlohmann_json::nlohmann_json -static-libgcc -static-libstdc++ -static)
 
 # Custom command to build Docker image
 add_custom_target(docker-build

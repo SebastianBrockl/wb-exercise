@@ -1,14 +1,15 @@
 #include "websocket_server.h"
 #include "util.h"
+#include "RadarConfig.h"
 
 int main() {
-
-    // load configuration file into shared pointer
-    std::shared_ptr<std::string> config = std::make_shared<std::string>();
-    load_config(config, "/app/default-config.cfg");
-    std::cout << "Config loaded" << std::endl;
-    // TODO: this should be logged only with debug profile
-    std::cout << *config << std::endl;
+    // load configuration  file as RadarConfig object
+    RadarConfig radarConfig;
+    radarConfig.loadFromFile("/app/default-config.cfg");
+    std::cout << "RadarConfig loaded" << std::endl;
+    // TODO: this should be loggeed only in debug profile
+    std::cout << radarConfig.toString() << std::endl;
+    std::cout << radarConfig.to_json_pretty() << std::endl;
 
 
     // Setup websocket server

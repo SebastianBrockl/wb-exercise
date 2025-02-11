@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <nlohmann/json.hpp>
 
 class RadarConfig {
 public:
@@ -12,7 +13,8 @@ public:
     bool loadFromString(const std::string& configStr);
     const std::string& getConfig() const { return m_config; }
     std::string toString() const;
-
+    nlohmann::json to_json() const;
+    std::string to_json_pretty() const;
 
     // Configuration parameters
     std::string sensorStop;

@@ -40,5 +40,6 @@ sudo apt-get install -y \
     git \
     libboost-all-dev \
     libwebsocketpp-dev \
-    libspdlog-dev
+    libspdlog-dev \
+    nlohmann-json3-dev
 ```

@@ -5,6 +5,7 @@
 #include <stdexcept>
 #include <iostream>
 #include <iterator>
+#include <nlohmann/json.hpp>
 
 bool RadarConfig::loadFromFile(const std::string& filePath) {
     std::string configStr = read_file_to_string(filePath);
@@ -102,7 +103,6 @@ void RadarConfig::parseLine(const std::string& line) {
     }
 }
 
-
 std::string RadarConfig::toString() const {
     std::ostringstream oss;
 
@@ -168,4 +168,47 @@ std::string RadarConfig::toString() const {
     oss << "\nsensorStart: " << sensorStart << "\n";
 
     return oss.str();
+}
+
+nlohmann::json RadarConfig::to_json() const {
+    nlohmann::json j;
+
+    j["sensorStop"] = sensorStop;
+    j["flushCfg"] = flushCfg;
+    j["dfeDataOutputMode"] = dfeDataOutputMode;
+    j["channelCfg"] = channelCfg;
+    j["adcCfg"] = adcCfg;
+    j["adcbufCfg"] = adcbufCfg;
+    j["lowPower"] = lowPower;
+    j["profileCfg"] = profileCfg;
+    j["chirpCfg0"] = chirpCfg0;
+    j["chirpCfg1"] = chirpCfg1;
+    j["chirpCfg2"] = chirpCfg2;
+    j["frameCfg"] = frameCfg;
+    j["dynamicRACfarCfg"] = dynamicRACfarCfg;
+    j["staticRACfarCfg"] = staticRACfarCfg;
+    j["dynamicRangeAngleCfg"] = dynamicRangeAngleCfg;
+    j["dynamic2DAngleCfg"] = dynamic2DAngleCfg;
+    j["staticRangeAngleCfg"] = staticRangeAngleCfg;
+    j["antGeometry0"] = antGeometry0;
+    j["antGeometry1"] = antGeometry1;
+    j["antPhaseRot"] = antPhaseRot;
+    j["fovCfg"] = fovCfg;
+    j["compRangeBiasAndRxChanPhase"] = compRangeBiasAndRxChanPhase;
+    j["staticBoundaryBox"] = staticBoundaryBox;
+    j["boundaryBox"] = boundaryBox;
+    j["sensorPosition"] = sensorPosition;
+    j["gatingParam"] = gatingParam;
+    j["stateParam"] = stateParam;
+    j["allocationParam"] = allocationParam;
+    j["maxAcceleration"] = maxAcceleration;
+    j["trackingCfg"] = trackingCfg;
+    j["presenceBoundaryBox"] = presenceBoundaryBox;
+    j["sensorStart"] = sensorStart;
+
+    return j;
+}
+
+std::string RadarConfig::to_json_pretty() const {
+    return to_json().dump(4); // Pretty print with 4 spaces indentation
 }
