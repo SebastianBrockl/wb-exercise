@@ -18,15 +18,17 @@ Controller::Controller(
         m_write_port(write_port), 
         m_write_baudrate(write_baudrate), 
         m_websocket_port(websocket_port), 
-        m_ws_server(io_context, websocket_port), 
-        m_uart_connection(
-            io_context, 
-            write_port, 
-            write_baudrate, 
-            read_port, 
-            read_baudrate) 
+        m_ws_server(io_context, websocket_port)
+        // , 
+        // m_uart_connection(
+        //     io_context, 
+        //     write_port, 
+        //     write_baudrate, 
+        //     read_port, 
+        //     read_baudrate) 
     {
     // Load configuration file as RadarConfig object
+    std::cout << "Loading RadarConfig from file: " << m_config_path << std::endl;
     m_radar_config.loadFromFile(m_config_path);
     std::cout << "RadarConfig loaded" << std::endl;
     // TODO: this should be logged only in debug profile

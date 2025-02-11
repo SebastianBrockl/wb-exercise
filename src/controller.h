@@ -27,7 +27,7 @@ private:
 
     RadarConfig m_radar_config;
     WebSocketServer m_ws_server;
-    UARTConnection m_uart_connection;
+//    UARTConnection m_uart_connection;
     std::thread m_ws_thread;
     std::thread m_processing_thread;
 };
