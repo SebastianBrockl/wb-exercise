@@ -14,7 +14,7 @@ public:
     using server_t = websocketpp::server<websocketpp::config::asio>;
     using connection_t = server_t::connection_type;
 
-    WebSocketServer(boost::asio::io_context& io_context);
+    WebSocketServer(boost::asio::io_context& io_context, uint16_t port);
 
     // callbacks for connection events
     void on_message(websocketpp::connection_hdl hdl, server_t::message_ptr msg);

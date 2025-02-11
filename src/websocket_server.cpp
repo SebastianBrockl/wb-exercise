@@ -1,10 +1,15 @@
 #include "websocket_server.h"
 
-WebSocketServer::WebSocketServer(boost::asio::io_context& io_context) {
+WebSocketServer::WebSocketServer(boost::asio::io_context& io_context, uint16_t port) {
     m_server.init_asio(&io_context);
     m_server.set_message_handler(std::bind(&WebSocketServer::on_message, this, std::placeholders::_1, std::placeholders::_2));
     m_server.set_open_handler(std::bind(&WebSocketServer::on_open, this, std::placeholders::_1));
     m_server.set_close_handler(std::bind(&WebSocketServer::on_close, this, std::placeholders::_1));
+    m_server.listen(port);
+    m_server.start_accept();
+    io_context.post([port]() {
+        std::cout << "WebSocket server running on port " << port << std::endl;
+    });
 }
 
 void WebSocketServer::on_message(websocketpp::connection_hdl hdl, server_t::message_ptr msg) {
@@ -51,8 +56,9 @@ void WebSocketServer::erase(std::shared_ptr<connection_t> connection) {
 void WebSocketServer::run(uint16_t port) {
     m_server.listen(port);
     m_server.start_accept();
-    m_server.run();
-    std::cout << "Server running" << std::endl;
+    // log that server is running on it's own asio thread
+    //m_server.run();
+    //std::cout << "Server running" << std::endl;
 }
 
 void WebSocketServer::broadcast(const std::string& message) {

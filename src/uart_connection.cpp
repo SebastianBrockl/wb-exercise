@@ -1,14 +1,24 @@
 #include "uart_connection.h"
 
 UARTConnection::UARTConnection(
-        boost::asio::io_context& io_context, 
-        const std::string& write_port, 
-        const int write_baud, 
-        const std::string& read_port, 
-        const int read_baud) 
-    : m_write_port(io_context, write_port), m_read_port(io_context, read_port) {
+    boost::asio::io_context &io_context,
+    const std::string &write_port,
+    const int write_baud,
+    const std::string &read_port,
+    const int read_baud)
+    : m_write_port(io_context, write_port), m_read_port(io_context, read_port)
+{
     m_write_port.set_option(boost::asio::serial_port_base::baud_rate(write_baud));
     m_read_port.set_option(boost::asio::serial_port_base::baud_rate(read_baud));
+}
+
+void UARTConnection::async_write_config(const RadarConfig &config, std::function<void(const boost::system::error_code&, const unsigned int&)> callback)
+{
+    std::ostringstream oss;
+    std::string config_str = config.toString();
+    // append config with "sensorStop" & "flushCfg" & "sensorStart"
+    oss << "sensorStop\n" << "flushCfg\n" << config_str << "sensorStart\n";
+    boost::asio::async_write(m_write_port, boost::asio::buffer(config_str), callback);
 }
 
 void UARTConnection::write_config(const std::string& config_file) {
