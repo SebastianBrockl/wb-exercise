@@ -74,13 +74,13 @@ int main(int argc, char *argv[])
         }
     }
 
-    std::cout << "Starting application" << std::endl;
-    std::cout << "Config path: " << config_path << std::endl;
-    std::cout << "Read port: " << data_port << std::endl;
-    std::cout << "Read baudrate: " << data_baudrate << std::endl;
-    std::cout << "Write port: " << config_port << std::endl;
-    std::cout << "Write baudrate: " << config_baudrate << std::endl;
-    std::cout << "WebSocket port: " << websocket_port << std::endl;
+    std::cout << "Main: Starting application" << std::endl;
+    std::cout << "Main: Config path: " << config_path << std::endl;
+    std::cout << "Main: Read port: " << data_port << std::endl;
+    std::cout << "Main: Read baudrate: " << data_baudrate << std::endl;
+    std::cout << "Main: Write port: " << config_port << std::endl;
+    std::cout << "Main: Write baudrate: " << config_baudrate << std::endl;
+    std::cout << "Main: WebSocket port: " << websocket_port << std::endl;
 
     // Setup boost::asio::io_context
     boost::asio::io_context io_context;

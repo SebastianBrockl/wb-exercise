@@ -162,39 +162,39 @@ std::string RadarConfig::toString() const {
 }
 
 nlohmann::json RadarConfig::to_json() const {
-    nlohmann::json j;
+    nlohmann::json json;
 
-    j["dfeDataOutputMode"] = dfeDataOutputMode;
-    j["channelCfg"] = channelCfg;
-    j["adcCfg"] = adcCfg;
-    j["adcbufCfg"] = adcbufCfg;
-    j["lowPower"] = lowPower;
-    j["profileCfg"] = profileCfg;
-    j["chirpCfg0"] = chirpCfg0;
-    j["chirpCfg1"] = chirpCfg1;
-    j["chirpCfg2"] = chirpCfg2;
-    j["frameCfg"] = frameCfg;
-    j["dynamicRACfarCfg"] = dynamicRACfarCfg;
-    j["staticRACfarCfg"] = staticRACfarCfg;
-    j["dynamicRangeAngleCfg"] = dynamicRangeAngleCfg;
-    j["dynamic2DAngleCfg"] = dynamic2DAngleCfg;
-    j["staticRangeAngleCfg"] = staticRangeAngleCfg;
-    j["antGeometry0"] = antGeometry0;
-    j["antGeometry1"] = antGeometry1;
-    j["antPhaseRot"] = antPhaseRot;
-    j["fovCfg"] = fovCfg;
-    j["compRangeBiasAndRxChanPhase"] = compRangeBiasAndRxChanPhase;
-    j["staticBoundaryBox"] = staticBoundaryBox;
-    j["boundaryBox"] = boundaryBox;
-    j["sensorPosition"] = sensorPosition;
-    j["gatingParam"] = gatingParam;
-    j["stateParam"] = stateParam;
-    j["allocationParam"] = allocationParam;
-    j["maxAcceleration"] = maxAcceleration;
-    j["trackingCfg"] = trackingCfg;
-    j["presenceBoundaryBox"] = presenceBoundaryBox;
+    json["dfeDataOutputMode"] = dfeDataOutputMode;
+    json["channelCfg"] = channelCfg;
+    json["adcCfg"] = adcCfg;
+    json["adcbufCfg"] = adcbufCfg;
+    json["lowPower"] = lowPower;
+    json["profileCfg"] = profileCfg;
+    json["chirpCfg0"] = chirpCfg0;
+    json["chirpCfg1"] = chirpCfg1;
+    json["chirpCfg2"] = chirpCfg2;
+    json["frameCfg"] = frameCfg;
+    json["dynamicRACfarCfg"] = dynamicRACfarCfg;
+    json["staticRACfarCfg"] = staticRACfarCfg;
+    json["dynamicRangeAngleCfg"] = dynamicRangeAngleCfg;
+    json["dynamic2DAngleCfg"] = dynamic2DAngleCfg;
+    json["staticRangeAngleCfg"] = staticRangeAngleCfg;
+    json["antGeometry0"] = antGeometry0;
+    json["antGeometry1"] = antGeometry1;
+    json["antPhaseRot"] = antPhaseRot;
+    json["fovCfg"] = fovCfg;
+    json["compRangeBiasAndRxChanPhase"] = compRangeBiasAndRxChanPhase;
+    json["staticBoundaryBox"] = staticBoundaryBox;
+    json["boundaryBox"] = boundaryBox;
+    json["sensorPosition"] = sensorPosition;
+    json["gatingParam"] = gatingParam;
+    json["stateParam"] = stateParam;
+    json["allocationParam"] = allocationParam;
+    json["maxAcceleration"] = maxAcceleration;
+    json["trackingCfg"] = trackingCfg;
+    json["presenceBoundaryBox"] = presenceBoundaryBox;
 
-    return j;
+    return json;
 }
 
 std::string RadarConfig::to_json_pretty() const {

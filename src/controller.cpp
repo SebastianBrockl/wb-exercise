@@ -19,61 +19,44 @@ Controller::Controller(
         m_write_baudrate(write_baudrate), 
         m_websocket_port(websocket_port), 
         m_ws_server(io_context, websocket_port),
-        m_data_uart(io_context, read_port, read_baudrate)
-        // , 
-        // m_uart_connection(
-        //     io_context, 
-        //     write_port, 
-        //     write_baudrate, 
-        //     read_port, 
-        //     read_baudrate) 
+        m_data_uart(io_context, read_port, read_baudrate),
+        m_config_uart(io_context, write_port, write_baudrate)
     {
     // Load configuration file as RadarConfig object
-    std::cout << "Loading RadarConfig from file: " << m_config_path << std::endl;
+    std::cout << "Controller: Loading RadarConfig from file: " << m_config_path << std::endl;
     m_radar_config.loadFromFile(m_config_path);
-    std::cout << "RadarConfig loaded" << std::endl;
-    // TODO: this should be logged only in debug profile
-    std::cout << m_radar_config.toString() << std::endl;
-//    std::cout << m_radar_config.to_json_pretty() << std::endl;
+    std::cout << "Controller: RadarConfig loaded" << std::endl;
 
-    // TODO setup config write as an asynch operation
-        // callback should print the written config
-
+    // setup config uart write on asio run
+    m_io_context.post([this](){async_write_config(m_radar_config);});
     // setup data uart read on asio run
     m_io_context.post([this](){m_data_uart.start_async_read();});
 }
 
 void Controller::run() {
-    // Start WebSocket server
-    // std::cout << "Starting WebSocket server" << std::endl;
-    // m_ws_thread = std::thread([this]() {
-    //     m_ws_server.run(m_websocket_port);
-    // });
-
-    // // Write configuration to UART
-    // m_uart_connection.write_config(m_radar_config);
-
-    // // Start a thread to process the buffer and broadcast to WebSocket clients
-    // m_processing_thread = std::thread(&Controller::process_buffer, this);
-
-    // // Read bitstream from UART
-    // m_uart_connection.read_bitstream(m_ws_server);
-
-    // m_processing_thread.join();
-    // m_ws_thread.join();
 }
 
 void Controller::async_write_config(const RadarConfig &config)
 {
-    //m_uart_connection.async_write_config(config, std::bind(&Controller::write_config_callback, this, std::placeholders::_1, std::placeholders::_2));
+    std::ostringstream oss;
+    // enrich config with sensor commands
+    oss << "sensorStop\n"
+        << "flushCfg\n"
+        << config.toString() 
+        << "sensorStart\n";
+
+    // FIXME: this schould be debug log
+    std::cout << "Controler: preparing config asynch write over UART" << std::endl << oss.str() << std::endl;
+    std::cout << "Controller: starting config asynch write over UART, config size: " << oss.str().size() << std::endl;
+    m_config_uart.async_write_config( oss.str(), std::bind(&Controller::write_config_callback, this, std::placeholders::_1, std::placeholders::_2));
 }
 
 void Controller::write_config_callback(const boost::system::error_code &error, std::size_t bytes_transferred)
 {
     if (!error) {
-        std::cout << "Configuration write successful: " << bytes_transferred << " bytes written.\n";
+        std::cout << "Controller: Configuration write successful: " << bytes_transferred << " bytes written.\n";
     } else {
-        std::cerr << "Configuration write failed: " << error.message() << std::endl;
+        std::cerr << "Controller: Configuration write failed: " << error.message() << std::endl;
         // exit(1);
     }
 }
@@ -85,31 +68,3 @@ void Controller::stop()
 //    m_processing_thread.join();
 //    m_ws_thread.join();
 }
-
-// void Controller::process_buffer() {
-//     while (true) {
-//         std::vector<char> buffer;
-//         {
-//             std::unique_lock<std::mutex> lock(m_uart_connection.m_mutex);
-//             m_uart_connection.m_cond_var.wait(lock, [this] { return !m_uart_connection.m_buffer_queue.empty(); });
-//             buffer = std::move(m_uart_connection.m_buffer_queue.front());
-//             m_uart_connection.m_buffer_queue.pop();
-//         }
-
-//         // Process the buffer and broadcast to WebSocket clients
-//         std::string bitstream(buffer.begin(), buffer.end());
-//         std::string magic_string = "MAGIC"; // Replace with your actual magic string
-//         size_t pos;
-//         while ((pos = bitstream.find(magic_string)) != std::string::npos) {
-//             std::string message = bitstream.substr(0, pos);
-//             bitstream.erase(0, pos + magic_string.length());
-
-//             // Map the message into an object (example object)
-//             nlohmann::json message_json;
-//             message_json["data"] = message;
-
-//             // Broadcast the message JSON to all connected WebSockets
-//             m_ws_server.broadcast(message_json.dump());
-//         }
-//     }
-//}

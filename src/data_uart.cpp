@@ -3,12 +3,13 @@
 DataUART::DataUART(boost::asio::io_context& io_context, const std::string& port, uint32_t baud_rate)
     : m_serial_port(io_context, port), m_strand(io_context.get_executor()) {
     m_serial_port.set_option(boost::asio::serial_port_base::baud_rate(baud_rate));
-    std::cout << "DataUART initialized" << std::endl;
+    std::cout << "Data UART initialized" << std::endl;
     std::cout << "Data UART Port: " << port << std::endl;
     std::cout << "Data UART Baud Rate: " << baud_rate << std::endl;
 }
 
 void DataUART::start_async_read() {
+    std::cout << "Data UART: Starting async read" << std::endl;
     boost::asio::async_read(m_serial_port, boost::asio::buffer(m_read_buffer.prepare(1024)),
         boost::asio::bind_executor(m_strand,
             std::bind(&DataUART::handle_read, this, std::placeholders::_1, std::placeholders::_2)));
@@ -32,6 +33,9 @@ void DataUART::start_async_read() {
  * 
  */
 void DataUART::handle_read(const boost::system::error_code& error, std::size_t bytes_transferred) {
+    //TODO remove this debug log
+    std::cout << "Data UART: Handling read" << std::endl;
+    std::cout << "Data UART: Bytes transferred: " << bytes_transferred << std::endl;
     if (!error) {
         m_read_buffer.commit(bytes_transferred);
         std::istream is(&m_read_buffer);
@@ -45,7 +49,7 @@ void DataUART::handle_read(const boost::system::error_code& error, std::size_t b
             auto it = std::search(data.begin(), data.end(), magic_string.begin(), magic_string.end());
             // If the magic string is found, start collecting the frame in m_frame_buffer
             if (it != data.end()) {
-                std::cout << "Magic string encountered" << std::endl;
+                std::cout << "Data UART: Magic string encountered" << std::endl;
                 m_collecting_frame = true;
                 // TODO handle frame overshoot here, potential overshoot will cause frames to be missed
                 m_frame_buffer.insert(m_frame_buffer.end(), it, data.end());
@@ -74,15 +78,15 @@ void DataUART::handle_read(const boost::system::error_code& error, std::size_t b
 
         start_async_read();
     } else {
-        std::cerr << "Error reading sensor data stream: " << error.message() << std::endl;
+        std::cerr << "Data UART: Error reading sensor data stream: " << error.message() << std::endl;
     }
 }
 
 void DataUART::handle_frame(std::shared_ptr<std::vector<uint8_t>> frame) {
-    std::cout << "Frame received, length: " << frame->size() << std::endl;
+    std::cout << "Data UART: Frame received, length: " << frame->size() << std::endl;
     //TODO
     // Send the frame to the parser for deserialization
-    // Example: parser.deserialize(frame);
+    // something like: parser.deserialize(frame);
 }
 
 /**
