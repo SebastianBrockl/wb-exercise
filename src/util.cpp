@@ -7,12 +7,12 @@
 std::string read_file_to_string(const std::string& file_path) {
     std::ifstream file(file_path);
     if (!file.is_open()) {
-        throw std::runtime_error("Failed to open file: " + file_path);
+        throw std::runtime_error("Util: failed to open file: " + file_path);
     }
 
     std::stringstream buffer;
     buffer << file.rdbuf();
-    std::cout << "File read successfully" << std::endl;
+    std::cout << "Util: File read successfully" << std::endl;
     return buffer.str();
 }
 

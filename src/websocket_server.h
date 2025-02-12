@@ -3,35 +3,36 @@
 
 #include <websocketpp/config/asio_no_tls.hpp>
 #include <websocketpp/server.hpp>
-
-#include <functional>
-#include <iostream>
+#include <boost/asio.hpp>
 #include <vector>
+#include <memory>
+#include <algorithm>
+#include <iostream>
 
 class WebSocketServer {
 public:
-    WebSocketServer();
-    void run(uint16_t port);
-
-    // Broadcast a message to all connected clients
-    void broadcast(const std::string& message);
-
-
-private:
     using server_t = websocketpp::server<websocketpp::config::asio>;
-    server_t m_server;
+    using connection_t = server_t::connection_type;
 
-    using connection_t = websocketpp::connection<websocketpp::config::asio>;
-    std::vector<std::shared_ptr<connection_t>> m_connections;
+    WebSocketServer(boost::asio::io_context& io_context, uint16_t port);
 
-    // Callback to handle incoming messages
+    // callbacks for connection events
     void on_message(websocketpp::connection_hdl hdl, server_t::message_ptr msg);
     void on_open(websocketpp::connection_hdl hdl);
     void on_close(websocketpp::connection_hdl hdl);
+    // start server on given port
+    void run(uint16_t port);
+    // broadcast message to all connected clients
+    void broadcast(const std::string& message);
+    // gracefully stop the server
+    void stop();
 
-    // helper function to remove a connection from m_connections
-    void erase(std::shared_ptr<connection_t> connection);
+private:
     void erase(websocketpp::connection_hdl hdl);
+    void erase(std::shared_ptr<connection_t> connection);
+
+    server_t m_server;
+    std::vector<std::shared_ptr<connection_t>> m_connections;
 };
 
 #endif // WEBSOCKET_SERVER_H
