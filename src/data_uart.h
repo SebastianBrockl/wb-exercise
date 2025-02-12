@@ -10,11 +10,14 @@
 class DataUART
 {
 public:
-    DataUART(boost::asio::io_context &io_context, const std::string &port, uint32_t baud_rate);
+    DataUART(boost::asio::io_context &io_context,
+             const std::string &port,
+             uint32_t baud_rate);
     void start_async_read();
 
 private:
-    void handle_read(const boost::system::error_code &error, std::size_t bytes_transferred);
+    void handle_read(const boost::system::error_code &error,
+                     std::size_t bytes_transferred);
     void handle_frame(std::shared_ptr<std::vector<uint8_t>> frame);
 
     uint32_t extractUint32(const std::vector<uint8_t> &buffer, size_t offset);

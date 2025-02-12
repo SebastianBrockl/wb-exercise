@@ -8,17 +8,25 @@
 #include <boost/asio.hpp>
 #include <thread>
 
-class Controller {
+class Controller
+{
 public:
-    Controller(boost::asio::io_context& io_context, const std::string& config_path, const std::string& read_port, int read_baudrate, const std::string& write_port, int write_baudrate, uint16_t websocket_port);
+    Controller(boost::asio::io_context &io_context,
+               const std::string &config_path,
+               const std::string &read_port,
+               int read_baudrate,
+               const std::string &write_port,
+               int write_baudrate,
+               uint16_t websocket_port);
     void run();
-    void async_write_config(const RadarConfig& config);
-    void write_config_callback(const boost::system::error_code& error, std::size_t bytes_transferred);
+    void async_write_config(const RadarConfig &config);
+    void write_config_callback(const boost::system::error_code &error,
+                               std::size_t bytes_transferred);
     // best attempt at gracefull shutdown
     void stop();
 
 private:
-    boost::asio::io_context& m_io_context;
+    boost::asio::io_context &m_io_context;
     std::string m_config_path;
     std::string m_read_port;
     int m_read_baudrate;

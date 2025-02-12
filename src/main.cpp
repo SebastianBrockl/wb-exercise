@@ -91,7 +91,13 @@ int main(int argc, char *argv[])
                        { handleSignal(io_context, error, signal_number); });
 
     // Create and run the controller
-    Controller controller(io_context, config_path, data_port, data_baudrate, config_port, config_baudrate, websocket_port);
+    Controller controller(io_context,
+                          config_path,
+                          data_port,
+                          data_baudrate,
+                          config_port,
+                          config_baudrate,
+                          websocket_port);
     // controller.run();
     io_context.run();
 
