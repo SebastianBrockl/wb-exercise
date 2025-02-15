@@ -10,8 +10,8 @@ ConfigUART::ConfigUART(
       m_30ms_delay(io_context, boost::asio::chrono::milliseconds(30))
 {
     m_serial_port.set_option(boost::asio::serial_port_base::baud_rate(baud_rate));
-    std::cout << "Config UART initialized" << std::endl;
-    std::cout << "Config UART Port: " << port << std::endl;
+    std::cout << "Config UART initialized" << "\n";
+    std::cout << "Config UART Port: " << port << "\n";
     std::cout << "Config UART Baud Rate: " << baud_rate << std::endl;
 }
 
@@ -44,16 +44,16 @@ void ConfigUART::async_write_config(const std::string &config_data,
 void ConfigUART::transmission_error(const boost::system::error_code &errorCode)
 {
     std::cout
-        << std::endl
+        << "\n"
         << "Config UART: Config transmission aborted due to error: " << errorCode.message()
-        << std::endl
+        << "\n"
         << "Config UART: Sent lines: " << m_sentLines << " of " << m_transmit.size()
-        << std::endl
+        << "\n"
         << "Config UART: Received lines: " << m_receivedLines << std::endl;
 
     for (const auto &line : m_receive)
     {
-        std::cout  << line << std::endl;
+        std::cout << line << std::endl;
     }
     std::cout << std::endl;
 
@@ -67,14 +67,14 @@ void ConfigUART::transmission_complete()
 {
     // all lines have been sent successfully
     std::cout
-        << std::endl
+        << "\n"
         << "Config UART: Config transmission completed successfully: "
-        << std::endl
-        << std::endl;
+        << "\n"
+        << "\n";
 
     for (const auto &line : m_receive)
     {
-        std::cout << line << std::endl;
+        std::cout << line << "\n";
     }
     std::cout << std::endl;
 
@@ -133,7 +133,7 @@ void ConfigUART::write_next_line(const std::string &line)
                 io_context.post(
                     [this, line]()
                     { 
-                        std::cout << "Config UART: tx: " << line << std::endl;
+                        std::cout << "\nConfig UART: tx: " << line << std::endl;
                         boost::asio::async_write(
                           m_serial_port,
                           boost::asio::buffer(line),
@@ -175,9 +175,20 @@ void ConfigUART::read_ack(const boost::system::error_code &errorCode, std::size_
                 std::istream is(&m_buffer);
                 std::string ack;
                 std::getline(is, ack);
-                m_acks.push_back(ack);
+
+                // special handling for the sensorStop ack, which unlike others is three lines
+                // NOTE: not pretty, but necessary if using async_read_until
+                if (ack.find("Ignored") != std::string::npos && m_acks.size() == 1)
+                {
+                    m_acks[0] = m_acks[0] + ack;
+                }
+                else
+                {
+                    m_acks.push_back(ack);
+                }
+
                 std::cout << "Config UART: rx: " << ack << std::endl;
-                
+
                 if (m_acks.size() >= 2)
                 {
                     // if two acks have been received, prepare for next line
