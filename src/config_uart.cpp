@@ -28,7 +28,7 @@ void ConfigUART::async_write_config(const std::string &config_data,
         std::string line;
         while (std::getline(iss, line))
         {
-            m_transmit.push_back(line);
+            m_transmit.push_back(line.append("\n"));
         }
         std::cout << "Config UART: Starting configuration Transmission" << std::endl;
 
@@ -53,7 +53,7 @@ void ConfigUART::transmission_error(const boost::system::error_code &errorCode)
 
     for (const auto &line : m_receive)
     {
-        std::cout << "Config UART: Received: " << line << std::endl;
+        std::cout  << line << std::endl;
     }
     std::cout << std::endl;
 
@@ -74,7 +74,7 @@ void ConfigUART::transmission_complete()
 
     for (const auto &line : m_receive)
     {
-        std::cout << "Config UART: Received: " << line << std::endl;
+        std::cout << line << std::endl;
     }
     std::cout << std::endl;
 
@@ -132,7 +132,9 @@ void ConfigUART::write_next_line(const std::string &line)
                 // otherwise write line
                 io_context.post(
                     [this, line]()
-                    { boost::asio::async_write(
+                    { 
+                        std::cout << "Config UART: tx: " << line << std::endl;
+                        boost::asio::async_write(
                           m_serial_port,
                           boost::asio::buffer(line),
                           [this](auto writeError, auto io)
@@ -174,7 +176,8 @@ void ConfigUART::read_ack(const boost::system::error_code &errorCode, std::size_
                 std::string ack;
                 std::getline(is, ack);
                 m_acks.push_back(ack);
-
+                std::cout << "Config UART: rx: " << ack << std::endl;
+                
                 if (m_acks.size() >= 2)
                 {
                     // if two acks have been received, prepare for next line
