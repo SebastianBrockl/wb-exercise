@@ -12,9 +12,48 @@ DataUART::DataUART(boost::asio::io_context &io_context, const std::string &port,
 void DataUART::start_async_read()
 {
     std::cout << "Data UART: Starting async read" << std::endl;
-    boost::asio::async_read(m_serial_port, boost::asio::buffer(m_read_buffer.prepare(1024)),
-                            boost::asio::bind_executor(m_strand,
-                                                       std::bind(&DataUART::handle_read, this, std::placeholders::_1, std::placeholders::_2)));
+    find_frame_start();
+    // boost::asio::async_read(m_serial_port, boost::asio::buffer(m_read_buffer.prepare(1024)),
+    //                         boost::asio::bind_executor(m_strand,
+    //                                                    std::bind(&DataUART::handle_read, this, std::placeholders::_1, std::placeholders::_2)));
+}
+
+std::size_t DataUART::match_magic_string(boost::asio::streambuf &readBuffer)
+{
+    auto data = boost::asio::buffer_cast<const uint8_t *>(readBuffer.data());
+    auto bufferSize = readBuffer.size();
+
+    // compare readbuffer against magic string , returns position of start of message frame header
+    for (std::size_t i = 0; i + sizeof(UART_MAGIC_BYTES) <= bufferSize; ++i)
+    {
+        if (std::memcmp(data + i, UART_MAGIC_BYTES, sizeof(UART_MAGIC_BYTES)) == 0)
+        {
+            return i + sizeof(UART_MAGIC_BYTES);
+        }
+    }
+    return 0; // Continue reading until match is found
+}
+
+void DataUART::find_frame_start()
+{
+    // TODO
+    //  Implement this
+    boost::asio::async_read_until(
+        m_serial_port,
+        m_read_buffer,
+        UART_MAGIC_STRING,
+        [this](const boost::system::error_code &error, std::size_t bytes_transferred)
+        {
+            if (!error)
+            {
+                std::cout << "Data UART: Magic string found" << std::endl;
+                find_frame_start();
+            }
+            else
+            {
+                std::cerr << "Data UART: Error reading sensor data stream: " << error.message() << std::endl;
+            }
+        });
 }
 
 /**

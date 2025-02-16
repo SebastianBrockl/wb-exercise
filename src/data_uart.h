@@ -6,7 +6,11 @@
 #include <functional>
 #include <vector>
 #include <memory>
+#include <istream>
 
+// MAGIC STRING SIGNIFIES START OF DATA FRAME
+static const uint8_t UART_MAGIC_BYTES[8] = {0x02, 0x01, 0x04, 0x03, 0x06, 0x05, 0x08, 0x07};
+static const std::string UART_MAGIC_STRING = "\x02\x01\x04\x03\x06\x05\x08\x07";
 class DataUART
 {
 public:
@@ -16,9 +20,13 @@ public:
     void start_async_read();
 
 private:
+
     void handle_read(const boost::system::error_code &error,
                      std::size_t bytes_transferred);
     void handle_frame(std::shared_ptr<std::vector<uint8_t>> frame);
+
+    void find_frame_start();
+    std::size_t match_magic_string(boost::asio::streambuf &readBuffer);
 
     uint32_t extractUint32(const std::vector<uint8_t> &buffer, size_t offset);
 
