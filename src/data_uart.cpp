@@ -12,10 +12,27 @@ DataUART::DataUART(boost::asio::io_context &io_context, const std::string &port,
 void DataUART::start_async_read()
 {
     std::cout << "Data UART: Starting async read" << std::endl;
-    find_frame_start();
     // boost::asio::async_read(m_serial_port, boost::asio::buffer(m_read_buffer.prepare(1024)),
     //                         boost::asio::bind_executor(m_strand,
     //                                                    std::bind(&DataUART::handle_read, this, std::placeholders::_1, std::placeholders::_2)));
+    auto frame_identifier = std::make_shared<FrameIdentifier>(m_serial_port, std::bind(&DataUART::frame_callback, this, std::placeholders::_1, std::placeholders::_2), UART_MAGIC_STRING);
+    frame_identifier->start();
+}
+
+void DataUART::frame_callback(const boost::system::error_code &error, std::size_t bytes_transferred)
+{
+    if (!error)
+    {
+        std::cout << "Data UART: Frame received, length: " << bytes_transferred << std::endl;
+        // TODO
+        //  Send the frame to the parser for deserialization
+        //  something like: parser.deserialize(frame);
+    }
+    else
+    {
+        std::cerr << "Data UART: Error reading sensor data stream: " << error.message() << std::endl;
+    }
+    start_async_read();
 }
 
 std::size_t DataUART::match_magic_string(boost::asio::streambuf &readBuffer)

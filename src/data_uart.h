@@ -1,6 +1,8 @@
 #ifndef DATA_UART_H
 #define DATA_UART_H
 
+#include "frame_identifier.h"
+
 #include <boost/asio.hpp>
 #include <iostream>
 #include <functional>
@@ -17,7 +19,10 @@ public:
     DataUART(boost::asio::io_context &io_context,
              const std::string &port,
              uint32_t baud_rate);
+
     void start_async_read();
+
+    void frame_callback(const boost::system::error_code &error, std::size_t bytes_transferred);
 
 private:
 
