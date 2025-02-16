@@ -176,6 +176,9 @@ void ConfigUART::read_ack(const boost::system::error_code &errorCode, std::size_
                 std::string ack;
                 std::getline(is, ack);
 
+                // remove carriage return for prettier log output
+                ack.erase(std::remove(ack.begin(), ack.end(), '\r'), ack.end());
+
                 // special handling for the sensorStop ack, which unlike others is three lines
                 // NOTE: not pretty, but necessary if using async_read_until
                 if (ack.find("Ignored") != std::string::npos && m_acks.size() == 1)
