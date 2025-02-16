@@ -34,7 +34,7 @@ private:
     // send a single config line, await response
     void async_send_line(const std::string &config_data,
                          callback_t callback);
-    // write a single line, includedefault delay
+    // write a single line, included efault delay
     void write_next_line(const std::string &line);
 
     // read acks in response to a single written config line
