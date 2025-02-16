@@ -165,9 +165,44 @@ make push
 
 ### UART features
 
+#### Config worite sequence
+
 The mistral device uses
 
 1 stopbit
 no parity
 baudrate config 115200
 baudrate data   921600
+
+```mermaid
+sequenceDiagram
+    participant controller
+    participant config as config_uart
+    participant io as io_context
+    participant serial
+    controller ->>+ config: async_write_config(RadarConfig)
+    opt Trasnmission in progress
+        config ->> config: NOP: log error
+    end
+    config ->> config: ready_transmission()
+    loop untill all lines written
+        config ->> config: write_next_line()
+        config ->>- io: delay 30ms
+        io --)+ config: callback
+        config ->>- io: write_line()
+        io --)+ serial: write
+        serial --) io: 
+        io --)+ config: callback - read_ack
+        config ->>- io: read line
+        io --) serial: read
+        serial --) io: 
+        io --)+ config: callback - read_ack
+        config ->>- io: read line
+        io --) serial: read
+        serial --) io: 
+        io --)+ config: callback write_next_line()
+    end
+    config ->> config: print all acks
+    config ->>- controller: callback
+
+```
