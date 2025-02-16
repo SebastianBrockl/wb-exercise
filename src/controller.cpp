@@ -30,8 +30,8 @@ Controller::Controller(
     m_io_context.post([this]()
                       { async_write_config(m_radar_config); });
     // setup data uart read on asio run
-    m_io_context.post([this]()
-                      { m_data_uart.start_async_read(); });
+    //    m_io_context.post([this]()
+    //                      { m_data_uart.start_async_read(); });
 }
 
 void Controller::run()
@@ -59,7 +59,11 @@ void Controller::write_config_callback(const boost::system::error_code &error, s
     if (!error)
     {
         std::cout << "Controller: Configuration write successful: " << bytes_transferred << " bytes written.\n";
+        // Start reading data
+        m_io_context.post([this]()
+                          { m_data_uart.start_async_read(); });
     }
+
     else
     {
         std::cerr << "Controller: Configuration write failed: " << error.message() << std::endl;

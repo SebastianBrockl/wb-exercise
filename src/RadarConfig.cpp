@@ -163,92 +163,92 @@ std::string RadarConfig::toString() const
 {
     std::ostringstream oss;
 
-    oss << "dfeDataOutputMode: " << dfeDataOutputMode << "\n";
-    oss << "channelCfg: ";
+    oss << "dfeDataOutputMode " << dfeDataOutputMode << "\n";
+    oss << "channelCfg ";
     for (const auto &val : channelCfg)
         oss << val << " ";
-    oss << "\nadcCfg: ";
+    oss << "\nadcCfg ";
     for (const auto &val : adcCfg)
         oss << val << " ";
-    oss << "\nadcbufCfg: ";
+    oss << "\nadcbufCfg ";
     for (const auto &val : adcbufCfg)
         oss << val << " ";
-    oss << "\nlowPower: ";
+    oss << "\nlowPower ";
     for (const auto &val : lowPower)
         oss << val << " ";
-    oss << "\nprofileCfg: ";
+    oss << "\nprofileCfg ";
     for (const auto &val : profileCfg)
         oss << val << " ";
-    oss << "\nchirpCfg0: ";
+    oss << "\nchirpCfg0 ";
     for (const auto &val : chirpCfg0)
         oss << val << " ";
-    oss << "\nchirpCfg1: ";
+    oss << "\nchirpCfg1 ";
     for (const auto &val : chirpCfg1)
         oss << val << " ";
-    oss << "\nchirpCfg2: ";
+    oss << "\nchirpCfg2 ";
     for (const auto &val : chirpCfg2)
         oss << val << " ";
-    oss << "\nframeCfg: ";
+    oss << "\nframeCfg ";
     for (const auto &val : frameCfg)
         oss << val << " ";
-    oss << "\ndynamicRACfarCfg: ";
+    oss << "\ndynamicRACfarCfg ";
     for (const auto &val : dynamicRACfarCfg)
         oss << val << " ";
-    oss << "\nstaticRACfarCfg: ";
+    oss << "\nstaticRACfarCfg ";
     for (const auto &val : staticRACfarCfg)
         oss << val << " ";
-    oss << "\ndynamicRangeAngleCfg: ";
+    oss << "\ndynamicRangeAngleCfg ";
     for (const auto &val : dynamicRangeAngleCfg)
         oss << val << " ";
-    oss << "\ndynamic2DAngleCfg: ";
+    oss << "\ndynamic2DAngleCfg ";
     for (const auto &val : dynamic2DAngleCfg)
         oss << val << " ";
-    oss << "\nstaticRangeAngleCfg: ";
+    oss << "\nstaticRangeAngleCfg ";
     for (const auto &val : staticRangeAngleCfg)
         oss << val << " ";
-    oss << "\nantGeometry0: ";
+    oss << "\nantGeometry0 ";
     for (const auto &val : antGeometry0)
         oss << val << " ";
-    oss << "\nantGeometry1: ";
+    oss << "\nantGeometry1 ";
     for (const auto &val : antGeometry1)
         oss << val << " ";
-    oss << "\nantPhaseRot: ";
+    oss << "\nantPhaseRot ";
     for (const auto &val : antPhaseRot)
         oss << val << " ";
-    oss << "\nfovCfg: ";
+    oss << "\nfovCfg ";
     for (const auto &val : fovCfg)
         oss << val << " ";
-    oss << "\ncompRangeBiasAndRxChanPhase: ";
+    oss << "\ncompRangeBiasAndRxChanPhase ";
     for (const auto &val : compRangeBiasAndRxChanPhase)
         oss << val << " ";
-    oss << "\nstaticBoundaryBox: ";
+    oss << "\nstaticBoundaryBox ";
     for (const auto &val : staticBoundaryBox)
         oss << val << " ";
-    oss << "\nboundaryBox: ";
+    oss << "\nboundaryBox ";
     for (const auto &val : boundaryBox)
         oss << val << " ";
-    oss << "\nsensorPosition: ";
+    oss << "\nsensorPosition ";
     for (const auto &val : sensorPosition)
         oss << val << " ";
-    oss << "\ngatingParam: ";
+    oss << "\ngatingParam ";
     for (const auto &val : gatingParam)
         oss << val << " ";
-    oss << "\nstateParam: ";
+    oss << "\nstateParam ";
     for (const auto &val : stateParam)
         oss << val << " ";
-    oss << "\nallocationParam: ";
+    oss << "\nallocationParam ";
     for (const auto &val : allocationParam)
         oss << val << " ";
-    oss << "\nmaxAcceleration: ";
+    oss << "\nmaxAcceleration ";
     for (const auto &val : maxAcceleration)
         oss << val << " ";
-    oss << "\ntrackingCfg: ";
+    oss << "\ntrackingCfg ";
     for (const auto &val : trackingCfg)
         oss << val << " ";
-    oss << "\npresenceBoundaryBox: ";
+    oss << "\npresenceBoundaryBox ";
     for (const auto &val : presenceBoundaryBox)
         oss << val << " ";
-
+    oss << "\n";
     return oss.str();
 }
 

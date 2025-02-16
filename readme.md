@@ -161,3 +161,13 @@ make push
  - implement full bytestream -> TLV deserialization
  - implement TLV -> JSON mapping
  - finalize JSON broadcast for open connections
+
+
+### UART features
+
+The mistral device uses
+
+1 stopbit
+no parity
+baudrate config 115200
+baudrate data   921600
