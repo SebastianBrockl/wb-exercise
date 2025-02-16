@@ -165,7 +165,7 @@ make push
 
 ### UART features
 
-#### Config worite sequence
+#### Config write sequence
 
 The mistral device uses
 
