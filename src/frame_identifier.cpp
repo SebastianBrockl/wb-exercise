@@ -6,10 +6,10 @@
  * @param serial_port The serial port to read from
  * @param callback The callback to call when a frame is found
  * @param delimiter The delimiter to search for
- * 
+ *
  * This constructor initializes the frame identifier with the serial port, callback and delimiter
  * and starts a timeout.
- * Example usage: 
+ * Example usage:
  * @code
  * auto frame_identifier = std::make_shared<FrameIdentifier>(serial_port, callback, delimiter);
  * frame_identifier->start();
@@ -17,7 +17,7 @@
 FrameIdentifier::FrameIdentifier(
     boost::asio::serial_port &serial_port,
     callback_t callback,
-    const std::string& delimiter)
+    const std::string &delimiter)
     : m_serial_port(serial_port),
       m_timeout(serial_port.get_executor(), boost::asio::chrono::seconds(1)),
       m_callback(callback),
@@ -30,7 +30,8 @@ FrameIdentifier::FrameIdentifier(
  *
  * This function starts the frame identifier by starting a timeout and then calling find_frame_start
  */
-void FrameIdentifier::start() {
+void FrameIdentifier::start()
+{
     auto self = shared_from_this();
     self->start_timeout();
     find_frame_start();
@@ -46,17 +47,100 @@ void FrameIdentifier::find_frame_start()
         m_delimiter,
         [self](const boost::system::error_code &error, std::size_t bytes_transferred)
         {
-            self->m_read_bytes = self->m_read_bytes + bytes_transferred;
             if (!error)
             {
-                std::cout << "Data UART: Magic string found" << std::endl;
-                self->find_frame_start();
+                std::istream is(&self->m_read_buffer);
+                std::string data;
+                std::getline(is, data);
+
+                std::size_t magic_string_position = data.find(self->m_delimiter);
+                if (magic_string_position == std::string::npos)
+                {
+                    // sanity check
+                    std::cout << "Data UART: Magic string not found this should never happen" << std::endl;
+                    return;
+                }
+                if (magic_string_position != std::string::npos)
+                {
+                    // clear the buffer except for the magic string
+                    self->m_read_buffer.consume(magic_string_position);
+                    self->m_read_bytes = self->m_read_buffer.size();
+                    self->read_header();
+                }
             }
             else
             {
-                std::cerr << "Data UART: Error reading sensor data stream: " << error.message() 
-                << "\n" 
-                << "Data UART: bytes read: " << bytes_transferred << std::endl;
+                std::cerr << "Data UART: Error reading sensor data stream: " << error.message()
+                          << "\n"
+                          << "Data UART: bytes read: " << bytes_transferred << std::endl;
+                self->m_callback(error, bytes_transferred);
+            }
+        });
+}
+
+void FrameIdentifier::read_header()
+{
+    auto self = shared_from_this();
+    // read next 32 bytes composing the message header
+
+    boost::asio::async_read(
+        m_serial_port,
+        m_read_buffer,
+        boost::asio::transfer_exactly(32),
+        [self](const boost::system::error_code &error, std::size_t bytes_transferred)
+        {
+            if (!error)
+            {
+                FrameHeader header = self->deserialize_header();
+                self->m_read_bytes = self->m_read_buffer.size();
+                self->read_message(header.totalPacketLen - 40);
+            }
+            else
+            {
+                std::cerr << "Frame Identifier: Error reading sensor data stream: " << error.message() << std::endl;
+                self->m_callback(error, bytes_transferred);
+            }
+        });
+}
+
+FrameHeader FrameIdentifier::deserialize_header()
+{
+    FrameHeader header;
+    std::istream is(&m_read_buffer);
+    is.read(reinterpret_cast<char *>(&header), sizeof(FrameHeader));
+    return header;
+}
+
+void FrameIdentifier::read_message(size_t remaining_message_lenght)
+{
+    auto self = shared_from_this();
+    boost::asio::async_read(
+        m_serial_port,
+        m_read_buffer,
+        boost::asio::transfer_exactly(remaining_message_lenght),
+        [self](const boost::system::error_code &error, std::size_t bytes_transferred)
+        {
+            if (!error)
+            {
+                self->m_read_bytes = self->m_read_buffer.size();
+                auto header = self->deserialize_header();
+                std::cout 
+                    << "Frame Identifier: Frame received, length: " << self->m_read_bytes << "\n"
+                    << "Frame Identifier: header magic word: " << header.magic_word << "\n"
+                    << "Frame Identifier: header version : " << header.version << "\n"
+                    << "Frame Identifier: header total packet lenght : " << header.totalPacketLen << "\n"
+                    << "Frame Identifier: header platform : " << header.platform << "\n"
+                    << "Frame Identifier: header frame number : " << header.frameNumber << "\n"
+                    << "Frame Identifier: header time stamp : " << header.timeCpuCycles << "\n"
+                    << "Frame Identifier: num detected obj: " << header.numDetectedObj << "\n"
+                    << "Frame Identifier: num TLV : " << header.numTLVs << "\n"
+                    << "Frame Identifier: subframe num : " << header.subFrameNumber << "\n"
+                    << std::endl;
+                self->m_callback(error, self->m_read_bytes);
+            }
+            else
+            {
+                std::cerr << "Frame Identifier: Error reading sensor data stream: " << error.message() << std::endl;
                 self->m_callback(error, bytes_transferred);
             }
         });

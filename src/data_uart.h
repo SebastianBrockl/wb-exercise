@@ -21,6 +21,7 @@ public:
              uint32_t baud_rate);
 
     void start_async_read();
+    void read_char();
 
     void frame_callback(const boost::system::error_code &error, std::size_t bytes_transferred);
 

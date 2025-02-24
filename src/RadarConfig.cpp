@@ -179,13 +179,13 @@ std::string RadarConfig::toString() const
     oss << "\nprofileCfg ";
     for (const auto &val : profileCfg)
         oss << val << " ";
-    oss << "\nchirpCfg0 ";
+    oss << "\nchirpCfg ";
     for (const auto &val : chirpCfg0)
         oss << val << " ";
-    oss << "\nchirpCfg1 ";
+    oss << "\nchirpCfg ";
     for (const auto &val : chirpCfg1)
         oss << val << " ";
-    oss << "\nchirpCfg2 ";
+    oss << "\nchirpCfg ";
     for (const auto &val : chirpCfg2)
         oss << val << " ";
     oss << "\nframeCfg ";

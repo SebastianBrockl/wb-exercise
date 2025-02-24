@@ -1,6 +1,7 @@
 #ifndef FRAME_IDENTIFIER_H
 #define FRAME_IDENTIFIER_H
 
+#include "TLV.h"
 #include <boost/asio.hpp>
 #include <memory>
 #include <functional>
@@ -26,6 +27,9 @@ public:
 
 private:
     void find_frame_start();
+    void read_header();
+    void read_message(size_t remaining_message_lenght);
+    FrameHeader deserialize_header();
     void read_callback(const boost::system::error_code &error, std::size_t bytes_transferred);
     std::size_t match_magic_string(boost::asio::streambuf &readBuffer);
     void start_timeout();
@@ -37,6 +41,7 @@ private:
     callback_t m_callback;
     const std::string& m_delimiter;
 
+    std::shared_ptr<FrameHeader> m_frame_header;
 
 };
 
