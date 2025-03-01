@@ -32,6 +32,8 @@ private:
     FrameHeader deserialize_header();
     void read_callback(const boost::system::error_code &error, std::size_t bytes_transferred);
     std::size_t match_magic_string(boost::asio::streambuf &readBuffer);
+    size_t match_condition(boost::asio::streambuf& buffer);
+    size_t match_condition(std::size_t bytes_transferred);
     void start_timeout();
 
     boost::asio::serial_port& m_serial_port;
@@ -42,6 +44,7 @@ private:
     const std::string& m_delimiter;
 
     std::shared_ptr<FrameHeader> m_frame_header;
+
 
 };
 

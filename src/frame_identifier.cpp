@@ -23,6 +23,7 @@ FrameIdentifier::FrameIdentifier(
       m_callback(callback),
       m_delimiter(delimiter)
 {
+    std::cout << "\nFrame Identifier: Constructed, delimiter: " << std::hex << std::uppercase << delimiter << std::dec  << std::endl;
 }
 
 /**
@@ -45,6 +46,10 @@ void FrameIdentifier::find_frame_start()
         m_serial_port,
         m_read_buffer,
         m_delimiter,
+        // [self](boost::asio::streambuf& b)
+        // {
+        //     return self->match_condition(b);
+        // },
         [self](const boost::system::error_code &error, std::size_t bytes_transferred)
         {
             if (!error)
@@ -57,7 +62,7 @@ void FrameIdentifier::find_frame_start()
                 if (magic_string_position == std::string::npos)
                 {
                     // sanity check
-                    std::cout << "Data UART: Magic string not found this should never happen" << std::endl;
+                    std::cout << "Data UART: Magic string not found, this should never happen" << std::endl;
                     return;
                 }
                 if (magic_string_position != std::string::npos)
@@ -107,7 +112,15 @@ FrameHeader FrameIdentifier::deserialize_header()
 {
     FrameHeader header;
     std::istream is(&m_read_buffer);
-    is.read(reinterpret_cast<char *>(&header), sizeof(FrameHeader));
+    is.read(reinterpret_cast<char *>(&header.magic_word), sizeof(header.magic_word));
+    is.read(reinterpret_cast<char *>(&header.version), sizeof(header.version));
+    is.read(reinterpret_cast<char *>(&header.totalPacketLen), sizeof(header.totalPacketLen));
+    is.read(reinterpret_cast<char *>(&header.platform), sizeof(header.platform));
+    is.read(reinterpret_cast<char *>(&header.frameNumber), sizeof(header.frameNumber));
+    is.read(reinterpret_cast<char *>(&header.timeCpuCycles), sizeof(header.timeCpuCycles));
+    is.read(reinterpret_cast<char *>(&header.numDetectedObj), sizeof(header.numDetectedObj));
+    is.read(reinterpret_cast<char *>(&header.numTLVs), sizeof(header.numTLVs));
+    is.read(reinterpret_cast<char *>(&header.subFrameNumber), sizeof(header.subFrameNumber));
     return header;
 }
 
@@ -124,9 +137,9 @@ void FrameIdentifier::read_message(size_t remaining_message_lenght)
             {
                 self->m_read_bytes = self->m_read_buffer.size();
                 auto header = self->deserialize_header();
-                std::cout 
+                std::cout << "\n"
                     << "Frame Identifier: Frame received, length: " << self->m_read_bytes << "\n"
-                    << "Frame Identifier: header magic word: " << header.magic_word << "\n"
+                    << "Frame Identifier: header magic word: " << std::hex << std::uppercase << header.magic_word << std::dec << "\n"
                     << "Frame Identifier: header version : " << header.version << "\n"
                     << "Frame Identifier: header total packet lenght : " << header.totalPacketLen << "\n"
                     << "Frame Identifier: header platform : " << header.platform << "\n"
@@ -174,6 +187,34 @@ std::size_t FrameIdentifier::match_magic_string(boost::asio::streambuf &readBuff
         }
     }
     return 0; // not found
+}
+
+size_t FrameIdentifier::match_condition(std::size_t bytes_transferred) {
+    const uint8_t* data = boost::asio::buffer_cast<const uint8_t*>(m_read_buffer.data());
+    std::size_t size = m_read_buffer.size();
+
+    if (size < sizeof(m_read_buffer)) return 0;  // Not enough data yet
+
+    for (size_t i = 0; i <= size - sizeof(MAGIC_BYTES); ++i) {
+        if (std::memcmp(data + i, MAGIC_BYTES, sizeof(MAGIC_BYTES)) == 0) {
+            return i + sizeof(MAGIC_BYTES); // Return position past match
+        }
+    }
+    return 0;  // Keep reading
+}
+
+std::size_t FrameIdentifier::match_condition(boost::asio::streambuf& buffer) {
+    const uint8_t* data = boost::asio::buffer_cast<const uint8_t*>(buffer.data());
+    std::size_t size = boost::asio::buffer_size(buffer.data());
+
+    if (size < sizeof(MAGIC_BYTES)) return 0;  // Not enough data yet
+
+    for (std::size_t i = 0; i <= size - sizeof(MAGIC_BYTES); ++i) {
+        if (std::memcmp(data + i, MAGIC_BYTES, sizeof(MAGIC_BYTES)) == 0) {
+            return i + sizeof(MAGIC_BYTES); // Return the position past the match
+        }
+    }
+    return 0;  // Keep reading
 }
 
 /**

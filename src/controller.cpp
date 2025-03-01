@@ -60,8 +60,8 @@ void Controller::write_config_callback(const boost::system::error_code &error, s
     {
         std::cout << "Controller: Configuration write successful: " << bytes_transferred << " bytes written.\n";
         // Start reading data
-        // m_io_context.post([this]()
-        //                   { m_data_uart.start_async_read(); });
+        m_io_context.post([this]()
+                          { m_data_uart.start_async_read(); });
     }
 
     else
