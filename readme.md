@@ -93,6 +93,7 @@ sudo apt-get update &&
 sudo apt-get install -y \
     g++ \
     gcc-arm-linux-gnueabihf \
+    g++-arm-linux-gnueabihf \
     cmake \
     git \
     libboost-all-dev \
