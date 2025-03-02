@@ -45,28 +45,7 @@ void FrameIdentifier::find_frame_start()
     boost::asio::async_read_until(
         m_serial_port,
         m_read_buffer,
-        // [](auto begin, auto end) {
-        //     auto iterator = begin;
-        //     while (iterator != end)
-        //     {
-        //         if (std::distance(iterator, end) >= static_cast<int>(MAGIC_BYTES_VECTOR.size()) && // do we have enough data to compare
-        //             std::equal(MAGIC_BYTES_VECTOR.begin(), MAGIC_BYTES_VECTOR.end(), iterator))             // comparison happens here
-        //         {
-        //             return std::make_pair(std::next(iterator, MAGIC_BYTES_VECTOR.size()), true);
-        //         }
-        //         ++iterator;
-        //     }
-        //     return std::make_pair(iterator, false);
-        // },
         uart::MatchPattern(MAGIC_BYTES_VECTOR),
-        // [](auto begin, auto end)
-        // {
-        //     return uart::MatchPattern(MAGIC_BYTES_VECTOR).match(begin, end);
-        // },
-        // [self](boost::asio::streambuf& b)
-        // {
-        //     return self->match_condition(b);
-        // },
         [self](const boost::system::error_code &error, std::size_t bytes_transferred)
         {
             if (!error)
