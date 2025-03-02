@@ -50,7 +50,9 @@ void DataUART::start_async_read()
         << "Data UART: Stop bits: " << stop_option.value() << "\n"
         << "Data UART: Character size: " << char_option.value() << std::endl;
 
-    auto frame_identifier = std::make_shared<FrameIdentifier>(m_serial_port, std::bind(&DataUART::frame_callback, this, std::placeholders::_1, std::placeholders::_2), UART_MAGIC_STRING);
+    auto frame_identifier = std::make_shared<FrameIdentifier>(
+        m_serial_port, std::bind(&DataUART::frame_callback, this, std::placeholders::_1, std::placeholders::_2), 
+        MAGIC_STRING_VECTOR);
     frame_identifier->start();
     //read_char();
 }

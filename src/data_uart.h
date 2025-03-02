@@ -13,6 +13,8 @@
 // MAGIC STRING SIGNIFIES START OF DATA FRAME
 static const uint8_t UART_MAGIC_BYTES[8] = {0x02, 0x01, 0x04, 0x03, 0x06, 0x05, 0x08, 0x07};
 static const std::string UART_MAGIC_STRING(reinterpret_cast<const char*>(UART_MAGIC_BYTES), sizeof(UART_MAGIC_BYTES)); // = "\x02\x01\x04\x03\x06\x05\x08\x07";
+static const std::vector<uint8_t> MAGIC_STRING_VECTOR = {0x02, 0x01, 0x04, 0x03, 0x06, 0x05, 0x08, 0x07};
+
 // static const std::string UART_MAGIC_STRING = "\x0201040306050807";
 
 class DataUART

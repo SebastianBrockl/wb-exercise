@@ -9,11 +9,11 @@
 
 bool RadarConfig::loadFromFile(const std::string &filePath)
 {
-    std::string configStr = read_file_to_string(filePath);
+    std::string configStr = util::read_file_to_string(filePath);
 
-    ensure_unix_line_endings(configStr);
-    remove_comments(configStr);
-    remove_empty_lines(configStr);
+    util::ensure_unix_line_endings(configStr);
+    util::remove_comments(configStr);
+    util::remove_empty_lines(configStr);
 
     return loadFromString(configStr);
 }
