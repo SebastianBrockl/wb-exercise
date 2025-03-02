@@ -1,7 +1,6 @@
 #ifndef FRAME_IDENTIFIER_H
 #define FRAME_IDENTIFIER_H
 
-#include "MatchPattern.h"
 #include "TLV.h"
 #include <boost/asio.hpp>
 #include <memory>
@@ -21,19 +20,18 @@ public:
     FrameIdentifier(
         boost::asio::serial_port &serial_port,
         callback_t callback,
-        const std::string &delimiter);
+        const std::vector<uint8_t> &delimiter);
 
     void start();
 
 private:
     void find_frame_start();
+    void handle_frame_start(const boost::system::error_code &error, std::size_t bytes_transferred);
     void read_header();
     void read_message(size_t remaining_message_lenght);
     FrameHeader deserialize_header();
     void read_callback(const boost::system::error_code &error, std::size_t bytes_transferred);
-    std::size_t match_magic_string(boost::asio::streambuf &readBuffer);
-    size_t match_condition(boost::asio::streambuf& buffer);
-    size_t match_condition(std::size_t bytes_transferred);
+
     void start_timeout();
 
     boost::asio::serial_port& m_serial_port;
@@ -41,7 +39,7 @@ private:
     boost::asio::streambuf m_read_buffer;
     size_t m_read_bytes;
     callback_t m_callback;
-    const std::string& m_delimiter;
+    const std::vector<uint8_t> m_delimiter;
 
     std::shared_ptr<FrameHeader> m_frame_header;
 
