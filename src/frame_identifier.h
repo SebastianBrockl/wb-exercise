@@ -8,8 +8,6 @@
 #include <functional>
 #include <iostream>
 
-static const std::vector<uint8_t> MAGIC_BYTES_VECTOR = {0x02, 0x01, 0x04, 0x03, 0x06, 0x05, 0x08, 0x07};
-
 /**
  * @brief Class to identify the start of a frame in a stream of bytes
  * 
