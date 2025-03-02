@@ -45,7 +45,24 @@ void FrameIdentifier::find_frame_start()
     boost::asio::async_read_until(
         m_serial_port,
         m_read_buffer,
-        m_delimiter,
+        // [](auto begin, auto end) {
+        //     auto iterator = begin;
+        //     while (iterator != end)
+        //     {
+        //         if (std::distance(iterator, end) >= static_cast<int>(MAGIC_BYTES_VECTOR.size()) && // do we have enough data to compare
+        //             std::equal(MAGIC_BYTES_VECTOR.begin(), MAGIC_BYTES_VECTOR.end(), iterator))             // comparison happens here
+        //         {
+        //             return std::make_pair(std::next(iterator, MAGIC_BYTES_VECTOR.size()), true);
+        //         }
+        //         ++iterator;
+        //     }
+        //     return std::make_pair(iterator, false);
+        // },
+        uart::MatchPattern(MAGIC_BYTES_VECTOR),
+        // [](auto begin, auto end)
+        // {
+        //     return uart::MatchPattern(MAGIC_BYTES_VECTOR).match(begin, end);
+        // },
         // [self](boost::asio::streambuf& b)
         // {
         //     return self->match_condition(b);
@@ -62,7 +79,7 @@ void FrameIdentifier::find_frame_start()
                 if (magic_string_position == std::string::npos)
                 {
                     // sanity check
-                    std::cout << "Data UART: Magic string not found, this should never happen" << std::endl;
+                    std::cout << "Frame Identifier: Magic string not found, this should never happen" << std::endl;
                     return;
                 }
                 if (magic_string_position != std::string::npos)
@@ -75,9 +92,9 @@ void FrameIdentifier::find_frame_start()
             }
             else
             {
-                std::cerr << "Data UART: Error reading sensor data stream: " << error.message()
+                std::cerr << "Frame Identifier: Error finding frame start: " << error.message()
                           << "\n"
-                          << "Data UART: bytes read: " << bytes_transferred << std::endl;
+                          << "Frame Identifier: bytes read: " << bytes_transferred << "\n" << std::endl;
                 self->m_callback(error, bytes_transferred);
             }
         });
@@ -102,7 +119,7 @@ void FrameIdentifier::read_header()
             }
             else
             {
-                std::cerr << "Frame Identifier: Error reading sensor data stream: " << error.message() << std::endl;
+                std::cerr << "Frame Identifier: Error reading header: " << error.message() << "\n" << std::endl;
                 self->m_callback(error, bytes_transferred);
             }
         });
