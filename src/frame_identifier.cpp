@@ -1,4 +1,5 @@
 #include "frame_identifier.h"
+#include "util.h"
 #include "MatchPattern.h"
 #include <iomanip>
 
@@ -25,12 +26,13 @@ FrameIdentifier::FrameIdentifier(
       m_callback(callback),
       m_delimiter(delimiter)
 {
-    
-    std::cout << "\nFrame Identifier: Constructed, delimiter: " ;
-    for (auto it = m_delimiter.begin(); it != m_delimiter.end(); ++it) {
+
+    std::cout << "\nFrame Identifier: Constructed, delimiter: ";
+    for (auto it = m_delimiter.begin(); it != m_delimiter.end(); ++it)
+    {
         std::cout << "0x" << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(*it) << " ";
     }
-    std::cout << std::endl;
+    std::cout << std::dec << std::endl;
 }
 
 /**
@@ -57,45 +59,13 @@ void FrameIdentifier::find_frame_start()
         {
             self->handle_frame_start(error, bytes_transferred);
         });
-        // [self](const boost::system::error_code &error, std::size_t bytes_transferred)
-        // {
-        //     if (!error)
-        //     {
-        //         std::istream is(&self->m_read_buffer);
-        //         std::string data;
-        //         std::getline(is, data);
-
-        //         std::size_t magic_string_position = data.find(self->m_delimiter);
-        //         if (magic_string_position == std::string::npos)
-        //         {
-        //             // sanity check
-        //             std::cout << "Frame Identifier: Magic string not found, this should never happen" << std::endl;
-        //             return;
-        //         }
-        //         if (magic_string_position != std::string::npos)
-        //         {
-        //             // clear the buffer except for the magic string
-        //             self->m_read_buffer.consume(magic_string_position);
-        //             self->m_read_bytes = self->m_read_buffer.size();
-        //             self->read_header();
-        //         }
-        //     }
-        //     else
-        //     {
-        //         std::cerr << "Frame Identifier: Error finding frame start: " << error.message()
-        //                   << "\n"
-        //                   << "Frame Identifier: bytes read: " << bytes_transferred << "\n"
-        //                   << std::endl;
-        //         self->m_callback(error, bytes_transferred);
-        //     }
-        // });
 }
 
 /**
  * @brief Handle the start of a frame
  *
  * This function is called when the start of a frame is found. It performs simple sanity checks,
- * manipulates the read buffer to only contain the magic string *delimiter and passes controll 
+ * manipulates the read buffer to only contain the magic string delimiter and passes controll
  * to the read_header function.
  */
 void FrameIdentifier::handle_frame_start(const boost::system::error_code &error, std::size_t bytes_transferred)
@@ -103,45 +73,52 @@ void FrameIdentifier::handle_frame_start(const boost::system::error_code &error,
     auto self = shared_from_this();
     if (error)
     {
-        std::cerr << "Frame Identifier: Error finding frame start: " << error.message()
+        std::cerr << "Frame Identifier.handle_frame_start: Error finding frame start: " << error.message()
                   << "\n"
-                  << "Frame Identifier: bytes read before error: " << bytes_transferred << "\n"
+                  << "Frame Identifier.handle_frame_start: bytes read before error: " << bytes_transferred << "\n"
                   << std::endl;
         self->m_callback(error, bytes_transferred);
     }
     else
     {
         auto data = self->m_read_buffer.data();
-        const uint8_t* begin = reinterpret_cast<const uint8_t*>(boost::asio::buffer_cast<const char*>(data));
-        const uint8_t* end = begin + boost::asio::buffer_size(data);
+        const uint8_t *begin = reinterpret_cast<const uint8_t *>(boost::asio::buffer_cast<const char *>(data));
+        const uint8_t *end = begin + boost::asio::buffer_size(data);
         std::vector<uint8_t> binary_data(begin, end);
 
         auto magic_string_size = self->m_delimiter.size();
-        
+
         auto pair = uart::MatchPattern(self->m_delimiter)(begin, end);
         bool success = pair.second;
-        
+
         if (!success)
         {
-            std::cout << "Frame Identifier: Magic string not present.\nThis should never happen!" << std::endl;
-
-            for (const uint8_t* it = begin; it != end; ++it) {
-                std::cout << "0x" << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(*it) << " ";
-            }
-            std::cout << std::endl;
+            std::cout << "Frame Identifier.handle_frame_start: Magic string not present.\nThis should never happen!\n"
+                      << "Buffer contents: " << self->buffer_as_string() << std::endl;
             return;
         }
         else
         {
             auto one_past_magic_string = pair.first;
-            std::cout << "Frame Identifier: Magic string found" << std::endl;
+            std::cout << "Frame Identifier.handle_frame_start: Magic string found!\n"
+                      << "Bytes in buffer: " << self->m_read_buffer.size() << "\n"
+                      << "Buffer contents: " << self->buffer_as_string() << "\n"
+                      << std::endl;
 
+            std::size_t discarded_bytes = 0;
+            // sanity check
             if (one_past_magic_string != std::next(begin, magic_string_size))
             {
                 std::cout << "Magic string not at buffer start!" << std::endl;
+                discarded_bytes = one_past_magic_string - begin - magic_string_size;
+                std::cout << "Discarding " << discarded_bytes << " bytes" << std::endl;
             }
-            self->m_read_buffer.consume(pair.first - begin);
+            self->m_read_buffer.consume(discarded_bytes);
             self->m_read_bytes = self->m_read_buffer.size();
+            std::cout << "Bytes in buffer: " << self->m_read_buffer.size() << "\n"
+                      << "Buffer contents: " << self->buffer_as_string() << "\n"
+                      << std::endl;
+
             self->read_header();
         }
     }
@@ -160,13 +137,17 @@ void FrameIdentifier::read_header()
         {
             if (!error)
             {
+                std::cout << "Frame Identifier.read_header: \n"
+                << "Bytes in buffer: " << self->m_read_buffer.size() << "\n"
+                << "Buffer contents: " << self->buffer_as_string() << "\n"
+                << std::endl;
                 FrameHeader header = self->deserialize_header();
                 self->m_read_bytes = self->m_read_buffer.size();
                 self->read_message(header.totalPacketLen - 40);
             }
             else
             {
-                std::cerr << "Frame Identifier: Error reading header: " << error.message() << "\n"
+                std::cerr << "Frame Identifier.read_header: Error reading header: " << error.message() << "\n"
                           << std::endl;
                 self->m_callback(error, bytes_transferred);
             }
@@ -203,22 +184,14 @@ void FrameIdentifier::read_message(size_t remaining_message_lenght)
                 self->m_read_bytes = self->m_read_buffer.size();
                 auto header = self->deserialize_header();
                 std::cout << "\n"
-                          << "Frame Identifier: Frame received, length: " << self->m_read_bytes << "\n"
-                          << "Frame Identifier: header magic word: " << std::hex << std::uppercase << header.magic_word << std::dec << "\n"
-                          << "Frame Identifier: header version : " << header.version << "\n"
-                          << "Frame Identifier: header total packet lenght : " << header.totalPacketLen << "\n"
-                          << "Frame Identifier: header platform : " << header.platform << "\n"
-                          << "Frame Identifier: header frame number : " << header.frameNumber << "\n"
-                          << "Frame Identifier: header time stamp : " << header.timeCpuCycles << "\n"
-                          << "Frame Identifier: num detected obj: " << header.numDetectedObj << "\n"
-                          << "Frame Identifier: num TLV : " << header.numTLVs << "\n"
-                          << "Frame Identifier: subframe num : " << header.subFrameNumber << "\n"
+                          << "Frame Identifier.read_message: Frame received, length: " << self->m_read_bytes << "\n"
+                          << util::to_string(header)
                           << std::endl;
                 self->m_callback(error, self->m_read_bytes);
             }
             else
             {
-                std::cerr << "Frame Identifier: Error reading sensor data stream: " << error.message() << std::endl;
+                std::cerr << "Frame Identifier.read_message: Error reading sensor data stream: " << error.message() << std::endl;
                 self->m_callback(error, bytes_transferred);
             }
         });
@@ -251,4 +224,12 @@ void FrameIdentifier::start_timeout()
                 self->m_serial_port.cancel();
             }
         });
+}
+
+std::string FrameIdentifier::buffer_as_string()
+{
+    std::stringstream ss;
+    std::vector<uint8_t> buffer(m_read_buffer.size());
+    boost::asio::buffer_copy(boost::asio::buffer(buffer), m_read_buffer.data());
+    return util::to_hex_string(buffer);
 }

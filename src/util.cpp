@@ -3,7 +3,7 @@
 #include <sstream>
 #include <iostream>
 #include <stdexcept>
-
+#include <iomanip>
 
 std::string util::read_file_to_string(const std::string &file_path)
 {
@@ -62,4 +62,73 @@ void util::remove_comments(std::string &str)
     {
         str.erase(pos, str.find('\n', pos) - pos);
     }
+}
+
+std::string util::to_string(const FrameHeader &header)
+{
+    std::stringstream ss;
+    ss << "\n"
+       << "header magic word: " << util::to_hex_string(header.magic_word) << "\n"
+       << "header version : " << util::to_hex_string(header.version) << "\n"
+       << "header total packet lenght : " << header.totalPacketLen << "\n"
+       << "header platform : " << header.platform << "\n"
+       << "header frame number : " << header.frameNumber << "\n"
+       << "header time stamp : " << header.timeCpuCycles << "\n"
+       << "num detected obj: " << header.numDetectedObj << "\n"
+       << "num TLV : " << header.numTLVs << "\n"
+       << "subframe num : " << header.subFrameNumber;
+
+    return ss.str();
+}
+
+/**
+ * transform bytes to hexadecimal string.
+ */
+std::string util::to_hex_string(const std::vector<uint8_t> &data)
+{
+    std::stringstream ss;
+    ss << "0x ";
+    for (const auto &byte : data)
+    {
+        ss << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(byte) << " ";
+    }
+    return ss.str();
+}
+
+std::string util::to_hex_string(const uint8_t &data)
+{
+    const std::vector<uint8_t> data_vector = {data};
+    return util::to_hex_string(data_vector);
+}
+
+std::string util::to_hex_string(const uint16_t &data)
+{
+    const std::vector<uint8_t> data_vector = {
+        static_cast<uint8_t>(data >> 8),
+        static_cast<uint8_t>(data)};
+    return util::to_hex_string(data_vector);
+}
+
+std::string util::to_hex_string(const uint32_t &data)
+{
+    const std::vector<uint8_t> data_vector = {
+        static_cast<uint8_t>(data >> 24),
+        static_cast<uint8_t>(data >> 16),
+        static_cast<uint8_t>(data >> 8),
+        static_cast<uint8_t>(data)};
+    return util::to_hex_string(data_vector);
+}
+
+std::string util::to_hex_string(const uint64_t &data)
+{
+    const std::vector<uint8_t> data_vector = {
+        static_cast<uint8_t>(data >> 56),
+        static_cast<uint8_t>(data >> 48),
+        static_cast<uint8_t>(data >> 40),
+        static_cast<uint8_t>(data >> 32),
+        static_cast<uint8_t>(data >> 24),
+        static_cast<uint8_t>(data >> 16),
+        static_cast<uint8_t>(data >> 8),
+        static_cast<uint8_t>(data)};
+    return util::to_hex_string(data_vector);
 }

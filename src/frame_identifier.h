@@ -34,6 +34,8 @@ private:
 
     void start_timeout();
 
+    std::string buffer_as_string();
+
     boost::asio::serial_port& m_serial_port;
     boost::asio::steady_timer m_timeout;
     boost::asio::streambuf m_read_buffer;

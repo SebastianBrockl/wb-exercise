@@ -1,6 +1,7 @@
 #ifndef UTIL_H
 #define UTIL_H
 
+#include "TLV.h"
 #include <string>
 #include <memory>
 
@@ -30,6 +31,14 @@ namespace util
      * Remove comments from string
      */
     void remove_comments(std::string &str);
+
+    std::string to_string(const FrameHeader& header);
+
+    std::string to_hex_string(const std::vector<uint8_t> &data);
+    std::string to_hex_string(const uint8_t &data);
+    std::string to_hex_string(const uint16_t &data);
+    std::string to_hex_string(const uint32_t &data);
+    std::string to_hex_string(const uint64_t &data);
 
 } // namespace util
 
