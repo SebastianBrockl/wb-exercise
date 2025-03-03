@@ -71,7 +71,7 @@ std::string util::to_string(const FrameHeader &header)
        << "header magic word: " << util::to_hex_string(header.magic_word) << "\n"
        << "header version : " << util::to_hex_string(header.version) << "\n"
        << "header total packet lenght : " << header.totalPacketLen << "\n"
-       << "header platform : " << header.platform << "\n"
+       << "header platform : " <<util::to_hex_string(header.platform) << "\n"
        << "header frame number : " << header.frameNumber << "\n"
        << "header time stamp : " << header.timeCpuCycles << "\n"
        << "num detected obj: " << header.numDetectedObj << "\n"

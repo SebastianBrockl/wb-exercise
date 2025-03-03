@@ -1,6 +1,7 @@
 #include "frame_identifier.h"
 #include "util.h"
 #include "MatchPattern.h"
+#include <boost/endian/conversion.hpp>
 #include <iomanip>
 
 /**
@@ -167,6 +168,16 @@ FrameHeader FrameIdentifier::deserialize_header()
     is.read(reinterpret_cast<char *>(&header.numDetectedObj), sizeof(header.numDetectedObj));
     is.read(reinterpret_cast<char *>(&header.numTLVs), sizeof(header.numTLVs));
     is.read(reinterpret_cast<char *>(&header.subFrameNumber), sizeof(header.subFrameNumber));
+
+    // header.magic_word = boost::endian::little_to_native(header.magic_word);
+    header.version = boost::endian::little_to_native(header.version);
+    header.totalPacketLen = boost::endian::little_to_native(header.totalPacketLen);
+    header.platform = boost::endian::little_to_native(header.platform);
+    header.frameNumber = boost::endian::little_to_native(header.frameNumber);
+    header.timeCpuCycles = boost::endian::little_to_native(header.timeCpuCycles);
+    header.numDetectedObj = boost::endian::little_to_native(header.numDetectedObj);
+    header.numTLVs = boost::endian::little_to_native(header.numTLVs);
+    header.subFrameNumber = boost::endian::little_to_native(header.subFrameNumber);
     return header;
 }
 
