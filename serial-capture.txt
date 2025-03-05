@@ -52,3 +52,57 @@ subframe num:   00 00 00 00
 
 0x 00 00 1d 9f = 0b 0000 0000 0000 1110 1100 11111
 0x 00 0a 68 43 = 0b 0000 0101 0011 0100 0010 00011
+
+
+--------------------------------------------------------------------------------
+
+
+With hex header output:
+
+Frame Identifier: Constructed, delimiter: 0x02 0x01 0x04 0x03 0x06 0x05 0x08 0x07
+Frame Identifier.handle_frame_start: Magic string found!
+Bytes in buffer: 40
+Buffer contents: 0x 02 01 04 03 06 05 08 07 00 01 06 03 80 00 00 00 43 68 0a 00 01 00 00 00 00 00 00 00 00 00 00 00 03 00 00 00 00 00 00 00
+
+Bytes in buffer: 40
+Buffer contents: 0x 02 01 04 03 06 05 08 07 00 01 06 03 80 00 00 00 43 68 0a 00 01 00 00 00 00 00 00 00 00 00 00 00 03 00 00 00 00 00 00 00
+
+Frame Identifier.read_header:
+Bytes in buffer: 72
+Buffer contents: 0x 02 01 04 03 06 05 08 07 00 01 06 03 80 00 00 00 43 68 0a 00 01 00 00 00 00 00 00 00 00 00 00 00 03 00 00 00 00 00 00 00 06 00 00 00 18 00 00 00 0b 82 00 00 06 00 00 00 9e 1d 00 00 00 00 00 00 df 35 00 00 71 ec 00 00
+
+
+Frame Identifier.read_message: Frame received, length: 120
+
+header magic word: 0x 00 00 00 18 00 00 00 06
+header version : 0x 00 00 82 0b
+header total packet lenght : 0x 00 00 00 06
+header platform : 0x 00 00 1d 9e
+header frame number : 0x 00 00 00 00
+header time stamp : 0x 00 00 35 df
+num detected obj: 0x 00 00 ec 71
+num TLV : 0x 00 00 00 09
+subframe num : 0x 00 00 00 1c
+
+
+0x 02 01 04 03 06 05 08 07 00 01 06 03 80 00 00 00 43 68 0a 00 01 00 00 00 00 00 00 00 00 00 00 00 03 00 00 00 00 00 00 00
+
+0x 02 01 04 03 06 05 08 07 00 01 06 03 80 00 00 00 43 68 0a 00 01 00 00 00 00 00 00 00 00 00 00 00 03 00 00 00 00 00 00 00 06 00 00 00 18 00 00 00 0b 82 00 00 06 00 00 00 9e 1d 00 00 00 00 00 00 df 35 00 00 71 ec 00 00
+
+                                deserialized                    expected
+header magic word:              0x 00 00 00 18 00 00 00 06      0x 02 01 04 03 06 05 08 07 
+header version :                0x 00 00 82 0b                  0x 00 01 06 03 
+header total packet lenght :    0x 00 00 00 06                  0x 80 00 00 00 
+header platform :               0x 00 00 1d 9e                  0x 43 68 0a 00 
+header frame number :           0x 00 00 00 00                  0x 01 00 00 00 
+header time stamp :             0x 00 00 35 df                  0x 00 00 00 00 
+num detected obj:               0x 00 00 ec 71                  0x 00 00 00 00 
+num TLV :                       0x 00 00 00 09                  0x 03 00 00 00 
+subframe num :                  0x 00 00 00 1c                  0x 00 00 00 00 
+
+                     ----------------------- ----------- ----------- ----------- ----------- ----------- -----------
+Remaining buffer: 0x 06 00 00 00 18 00 00 00 0b 82 00 00 06 00 00 00 9e 1d 00 00 00 00 00 00 df 35 00 00 71 ec 00 00
+                     ^           ^           ^  ^        ^           ^  ^                    ^  ^                    09 00 00 00  1c 00 00 00 00 
+                     magic word
+
+                    conclusion => serialization is missaligned, by exactly the size of the header, byte order is correct, as stream is small-endian
