@@ -157,6 +157,7 @@ void FrameIdentifier::read_header()
 
 FrameHeader FrameIdentifier::deserialize_header()
 {
+    // buffer data should begin with the frame header at this point
     FrameHeader header;
     std::istream is(&m_read_buffer);
     is.read(reinterpret_cast<char *>(&header.magic_word), sizeof(header.magic_word));
@@ -196,7 +197,7 @@ void FrameIdentifier::read_message(size_t remaining_message_lenght)
                 auto header = self->deserialize_header();
                 std::cout << "\n"
                           << "Frame Identifier.read_message: Frame received, length: " << self->m_read_bytes << "\n"
-                          << util::to_string(header)
+                          << util::to_hex_string(header)
                           << std::endl;
                 self->m_callback(error, self->m_read_bytes);
             }

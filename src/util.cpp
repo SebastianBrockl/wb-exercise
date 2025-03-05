@@ -81,6 +81,23 @@ std::string util::to_string(const FrameHeader &header)
     return ss.str();
 }
 
+std::string util::to_hex_string(const FrameHeader &header)
+{
+    std::stringstream ss;
+    ss << "\n"
+       << "header magic word: " << util::to_hex_string(header.magic_word) << "\n"
+       << "header version : " << util::to_hex_string(header.version) << "\n"
+       << "header total packet lenght : " << to_hex_string(header.totalPacketLen) << "\n"
+       << "header platform : " <<util::to_hex_string(header.platform) << "\n"
+       << "header frame number : " << to_hex_string(header.frameNumber) << "\n"
+       << "header time stamp : " << to_hex_string(header.timeCpuCycles) << "\n"
+       << "num detected obj: " << to_hex_string(header.numDetectedObj) << "\n"
+       << "num TLV : " << to_hex_string(header.numTLVs) << "\n"
+       << "subframe num : " << to_hex_string(header.subFrameNumber);
+
+    return ss.str();
+}
+
 /**
  * transform bytes to hexadecimal string.
  */

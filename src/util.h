@@ -33,6 +33,7 @@ namespace util
     void remove_comments(std::string &str);
 
     std::string to_string(const FrameHeader& header);
+    std::string to_hex_string(const FrameHeader& header);
 
     std::string to_hex_string(const std::vector<uint8_t> &data);
     std::string to_hex_string(const uint8_t &data);
