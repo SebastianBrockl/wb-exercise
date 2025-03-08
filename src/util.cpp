@@ -4,6 +4,7 @@
 #include <iostream>
 #include <stdexcept>
 #include <iomanip>
+#include <boost/endian/conversion.hpp>
 
 std::string util::read_file_to_string(const std::string &file_path)
 {
@@ -71,7 +72,7 @@ std::string util::to_string(const FrameHeader &header)
        << "header magic word: " << util::to_hex_string(header.magic_word) << "\n"
        << "header version : " << util::to_hex_string(header.version) << "\n"
        << "header total packet lenght : " << header.totalPacketLen << "\n"
-       << "header platform : " <<util::to_hex_string(header.platform) << "\n"
+       << "header platform : " << util::to_hex_string(header.platform) << "\n"
        << "header frame number : " << header.frameNumber << "\n"
        << "header time stamp : " << header.timeCpuCycles << "\n"
        << "num detected obj: " << header.numDetectedObj << "\n"
@@ -88,7 +89,7 @@ std::string util::to_hex_string(const FrameHeader &header)
        << "header magic word: " << util::to_hex_string(header.magic_word) << "\n"
        << "header version : " << util::to_hex_string(header.version) << "\n"
        << "header total packet lenght : " << to_hex_string(header.totalPacketLen) << "\n"
-       << "header platform : " <<util::to_hex_string(header.platform) << "\n"
+       << "header platform : " << util::to_hex_string(header.platform) << "\n"
        << "header frame number : " << to_hex_string(header.frameNumber) << "\n"
        << "header time stamp : " << to_hex_string(header.timeCpuCycles) << "\n"
        << "num detected obj: " << to_hex_string(header.numDetectedObj) << "\n"
@@ -148,4 +149,53 @@ std::string util::to_hex_string(const uint64_t &data)
         static_cast<uint8_t>(data >> 8),
         static_cast<uint8_t>(data)};
     return util::to_hex_string(data_vector);
+}
+
+/**
+ * @brief Deserialize the frame header
+ *
+ * This function deserializes the frame header from the read buffer. Note that serialization is done byte by byte,
+ * as this needs to be platform agnostic. Moreover the function assumes that the byte order is little endian.
+ * @param data
+ * @return FrameHeader
+ * @throw std::runtime_error if data size is smaller than header size
+ */
+FrameHeader util::deserialize_header(const std::vector<uint8_t> &data)
+{
+    FrameHeader header;
+    if (data.size() < sizeof(FrameHeader))
+    {
+        throw std::runtime_error("Util: deserialize_header: insufficient data: data size is smaller than header size");
+    }
+    size_t offset = 0;
+    std::memcpy(&header.magic_word, &data[offset], sizeof(header.magic_word));
+    offset += sizeof(header.magic_word);
+    std::memcpy(&header.version, &data[offset], sizeof(header.version));
+    offset += sizeof(header.version);
+    std::memcpy(&header.totalPacketLen, &data[offset], sizeof(header.totalPacketLen));
+    offset += sizeof(header.totalPacketLen);
+    std::memcpy(&header.platform, &data[offset], sizeof(header.platform));
+    offset += sizeof(header.platform);
+    std::memcpy(&header.frameNumber, &data[offset], sizeof(header.frameNumber));
+    offset += sizeof(header.frameNumber);
+    std::memcpy(&header.timeCpuCycles, &data[offset], sizeof(header.timeCpuCycles));
+    offset += sizeof(header.timeCpuCycles);
+    std::memcpy(&header.numDetectedObj, &data[offset], sizeof(header.numDetectedObj));
+    offset += sizeof(header.numDetectedObj);
+    std::memcpy(&header.numTLVs, &data[offset], sizeof(header.numTLVs));
+    offset += sizeof(header.numTLVs);
+    std::memcpy(&header.subFrameNumber, &data[offset], sizeof(header.subFrameNumber));
+    offset += sizeof(header.subFrameNumber);
+
+    // header.magic_word = boost::endian::little_to_native(header.magic_word);
+    header.version = boost::endian::little_to_native(header.version);
+    header.totalPacketLen = boost::endian::little_to_native(header.totalPacketLen);
+    header.platform = boost::endian::little_to_native(header.platform);
+    header.frameNumber = boost::endian::little_to_native(header.frameNumber);
+    header.timeCpuCycles = boost::endian::little_to_native(header.timeCpuCycles);
+    header.numDetectedObj = boost::endian::little_to_native(header.numDetectedObj);
+    header.numTLVs = boost::endian::little_to_native(header.numTLVs);
+    header.subFrameNumber = boost::endian::little_to_native(header.subFrameNumber);
+
+    return header;
 }

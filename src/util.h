@@ -41,6 +41,8 @@ namespace util
     std::string to_hex_string(const uint32_t &data);
     std::string to_hex_string(const uint64_t &data);
 
+    FrameHeader deserialize_header(const std::vector<uint8_t> &data);
+
 } // namespace util
 
 #endif // UTIL_H
