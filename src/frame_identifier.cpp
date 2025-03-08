@@ -67,7 +67,7 @@ void FrameIdentifier::find_frame_start()
  *
  * This function is called when the start of a frame is found. It performs simple sanity checks,
  * manipulates the read buffer to only contain the magic string delimiter and passes controll
- * to the read_header function.
+ * to the prepare_header function.
  */
 void FrameIdentifier::handle_frame_start(const boost::system::error_code &error, std::size_t bytes_transferred)
 {
@@ -85,6 +85,7 @@ void FrameIdentifier::handle_frame_start(const boost::system::error_code &error,
         auto data = self->m_read_buffer.data();
         const uint8_t *begin = reinterpret_cast<const uint8_t *>(boost::asio::buffer_cast<const char *>(data));
         const uint8_t *end = begin + boost::asio::buffer_size(data);
+        // Wrap the buffer in a vector for easier handling.
         std::vector<uint8_t> binary_data(begin, end);
 
         auto magic_string_size = self->m_delimiter.size();
@@ -114,77 +115,92 @@ void FrameIdentifier::handle_frame_start(const boost::system::error_code &error,
                 discarded_bytes = one_past_magic_string - begin - magic_string_size;
                 std::cout << "Discarding " << discarded_bytes << " bytes" << std::endl;
             }
+            // if for some reason the magic string is not at the start of the buffer, discard the bytes preceding it.
             self->m_read_buffer.consume(discarded_bytes);
             self->m_read_bytes = self->m_read_buffer.size();
             std::cout << "Bytes in buffer: " << self->m_read_buffer.size() << "\n"
                       << "Buffer contents: " << self->buffer_as_string() << "\n"
                       << std::endl;
 
-            self->read_header();
+            // We can now be certain of that the buffer is alligned with the message start, and start reading the mesage
+            // by deserializing the header
+            self->prepare_header();
         }
     }
 }
 
-void FrameIdentifier::read_header()
+/**
+ * @brief Make sure the entire header is read in the buffer, and use it to read the rest of the message
+ *
+ * This function reads the frame header in it's entirety and then passes controll to the read_message function.
+ */
+void FrameIdentifier::prepare_header()
 {
     auto self = shared_from_this();
-    // read next 32 bytes composing the message header
 
-    boost::asio::async_read(
-        m_serial_port,
-        m_read_buffer,
-        boost::asio::transfer_exactly(32),
-        [self](const boost::system::error_code &error, std::size_t bytes_transferred)
+    size_t header_size = sizeof(FrameHeader);
+
+    if (self->m_read_buffer.size() > header_size)
+    {
+        // buffer allready contains entire header, no need to read more.
+        // auto data = self->get_buffer_data();
+        // FrameHeader header;
+        try
         {
-            if (!error)
+            auto header = util::deserialize_header(self->get_buffer_data());
+            return self->read_message(header.totalPacketLen - self->m_read_buffer.size());
+        }
+        catch (std::runtime_error &e)
+        {
+            std::cerr << "Frame Identifier.prepare_header: Error deserializing header: " << e.what() << "\n"
+                      << std::endl;
+            self->m_callback(boost::asio::error::fault, 0);
+            return;
+        }
+    }
+    else
+    {
+
+        boost::asio::async_read(
+            m_serial_port,
+            m_read_buffer,
+            boost::asio::transfer_exactly(header_size - self->m_read_buffer.size()),
+            [self](const boost::system::error_code &error, std::size_t bytes_transferred)
             {
-                std::cout << "Frame Identifier.read_header: \n"
-                << "Bytes in buffer: " << self->m_read_buffer.size() << "\n"
-                << "Buffer contents: " << self->buffer_as_string() << "\n"
-                << std::endl;
-                FrameHeader header = self->deserialize_header();
-                self->m_read_bytes = self->m_read_buffer.size();
-                self->read_message(header.totalPacketLen - 40);
-            }
-            else
-            {
-                std::cerr << "Frame Identifier.read_header: Error reading header: " << error.message() << "\n"
-                          << std::endl;
-                self->m_callback(error, bytes_transferred);
-            }
-        });
+                if (!error)
+                {
+                    std::cout << "Frame Identifier.prepare_header: \n"
+                              << "Bytes in buffer: " << self->m_read_buffer.size() << "\n"
+                              << "Buffer contents: " << self->buffer_as_string() << "\n"
+                              << std::endl;
+
+                    // return self->read_message(util::deserialize_header(self->get_buffer_data()).totalPacketLen - self->m_read_buffer.size());
+
+                    auto header = util::deserialize_header(self->get_buffer_data());
+                    return self->read_message(header.totalPacketLen - self->m_read_buffer.size());
+
+                    // FrameHeader header = self->deserialize_header();
+                    // self->m_read_bytes = self->m_read_buffer.size();
+                    // self->read_message(header.totalPacketLen - 40);
+                }
+                else
+                {
+                    std::cerr << "Frame Identifier.prepare_header: Error reading header: " << error.message() << "\n"
+                              << std::endl;
+                    self->m_callback(error, bytes_transferred);
+                }
+            });
+    }
 }
 
-FrameHeader FrameIdentifier::deserialize_header()
-{
-    // buffer data should begin with the frame header at this point
-    FrameHeader header;
-    std::istream is(&m_read_buffer);
-    is.read(reinterpret_cast<char *>(&header.magic_word), sizeof(header.magic_word));
-    is.read(reinterpret_cast<char *>(&header.version), sizeof(header.version));
-    is.read(reinterpret_cast<char *>(&header.totalPacketLen), sizeof(header.totalPacketLen));
-    is.read(reinterpret_cast<char *>(&header.platform), sizeof(header.platform));
-    is.read(reinterpret_cast<char *>(&header.frameNumber), sizeof(header.frameNumber));
-    is.read(reinterpret_cast<char *>(&header.timeCpuCycles), sizeof(header.timeCpuCycles));
-    is.read(reinterpret_cast<char *>(&header.numDetectedObj), sizeof(header.numDetectedObj));
-    is.read(reinterpret_cast<char *>(&header.numTLVs), sizeof(header.numTLVs));
-    is.read(reinterpret_cast<char *>(&header.subFrameNumber), sizeof(header.subFrameNumber));
-
-    // header.magic_word = boost::endian::little_to_native(header.magic_word);
-    header.version = boost::endian::little_to_native(header.version);
-    header.totalPacketLen = boost::endian::little_to_native(header.totalPacketLen);
-    header.platform = boost::endian::little_to_native(header.platform);
-    header.frameNumber = boost::endian::little_to_native(header.frameNumber);
-    header.timeCpuCycles = boost::endian::little_to_native(header.timeCpuCycles);
-    header.numDetectedObj = boost::endian::little_to_native(header.numDetectedObj);
-    header.numTLVs = boost::endian::little_to_native(header.numTLVs);
-    header.subFrameNumber = boost::endian::little_to_native(header.subFrameNumber);
-    return header;
-}
 
 void FrameIdentifier::read_message(size_t remaining_message_lenght)
 {
     auto self = shared_from_this();
+
+    std::cout << "Frame Identifier.read_message: Reading next: " << remaining_message_lenght << "bytes\n"
+              << std::endl;
+
     boost::asio::async_read(
         m_serial_port,
         m_read_buffer,
@@ -194,7 +210,8 @@ void FrameIdentifier::read_message(size_t remaining_message_lenght)
             if (!error)
             {
                 self->m_read_bytes = self->m_read_buffer.size();
-                auto header = self->deserialize_header();
+                auto data = self->get_buffer_data();
+                auto header = util::deserialize_header(data);
                 std::cout << "\n"
                           << "Frame Identifier.read_message: Frame received, length: " << self->m_read_bytes << "\n"
                           << util::to_hex_string(header)
@@ -244,4 +261,18 @@ std::string FrameIdentifier::buffer_as_string()
     std::vector<uint8_t> buffer(m_read_buffer.size());
     boost::asio::buffer_copy(boost::asio::buffer(buffer), m_read_buffer.data());
     return util::to_hex_string(buffer);
+}
+
+const std::vector<uint8_t> FrameIdentifier::get_buffer_data()
+{
+    // buffer allready contains entire header, no need to read more.
+    // auto data = self->m_read_buffer.data();
+    // const uint8_t *begin = reinterpret_cast<const uint8_t *>(boost::asio::buffer_cast<const char *>(data));
+    // const uint8_t *end = begin + boost::asio::buffer_size(data);
+    // // Wrap the buffer in a vector for easier handling.
+    // const std::vector<uint8_t> binary_data(begin, end);
+
+    std::vector<uint8_t> buffer(m_read_buffer.size());
+    boost::asio::buffer_copy(boost::asio::buffer(buffer), m_read_buffer.data());
+    return buffer;
 }
