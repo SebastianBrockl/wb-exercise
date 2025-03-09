@@ -162,30 +162,42 @@ std::string util::to_hex_string(const uint64_t &data)
  */
 FrameHeader util::deserialize_header(const std::vector<uint8_t> &data)
 {
+    return util::deserialize_header(data, data.begin());
+}
+
+/**
+ * @brief Deserialize the frame header
+ *
+ * This function deserializes the frame header from the read buffer. Note that serialization is done byte by byte,
+ * as this needs to be platform agnostic. Moreover the function assumes that the byte order is little endian.
+ * @param data
+ * @param iterator deserialization begins from iterator
+ * @return FrameHeader
+ * @throw std::runtime_error if data size is smaller than header size
+ */
+FrameHeader util::deserialize_header(const std::vector<uint8_t> &data,  std::vector<uint8_t>::const_iterator iterator)
+{
     FrameHeader header;
     if (data.size() < sizeof(FrameHeader))
     {
         throw std::runtime_error("Util: deserialize_header: insufficient data: data size is smaller than header size");
     }
-    size_t offset = 0;
-    std::memcpy(&header.magic_word, &data[offset], sizeof(header.magic_word));
-    offset += sizeof(header.magic_word);
-    std::memcpy(&header.version, &data[offset], sizeof(header.version));
-    offset += sizeof(header.version);
-    std::memcpy(&header.totalPacketLen, &data[offset], sizeof(header.totalPacketLen));
-    offset += sizeof(header.totalPacketLen);
-    std::memcpy(&header.platform, &data[offset], sizeof(header.platform));
-    offset += sizeof(header.platform);
-    std::memcpy(&header.frameNumber, &data[offset], sizeof(header.frameNumber));
-    offset += sizeof(header.frameNumber);
-    std::memcpy(&header.timeCpuCycles, &data[offset], sizeof(header.timeCpuCycles));
-    offset += sizeof(header.timeCpuCycles);
-    std::memcpy(&header.numDetectedObj, &data[offset], sizeof(header.numDetectedObj));
-    offset += sizeof(header.numDetectedObj);
-    std::memcpy(&header.numTLVs, &data[offset], sizeof(header.numTLVs));
-    offset += sizeof(header.numTLVs);
-    std::memcpy(&header.subFrameNumber, &data[offset], sizeof(header.subFrameNumber));
-    offset += sizeof(header.subFrameNumber);
+
+    // lambda function to copy data from iterator to field
+    auto copy_from_iterator = [&iterator](auto &field) {
+        std::memcpy(&field, &(*iterator), sizeof(field));
+        std::advance(iterator, sizeof(field));
+    };
+
+    copy_from_iterator(header.magic_word);
+    copy_from_iterator(header.version);
+    copy_from_iterator(header.totalPacketLen);
+    copy_from_iterator(header.platform);
+    copy_from_iterator(header.frameNumber);
+    copy_from_iterator(header.timeCpuCycles);
+    copy_from_iterator(header.numDetectedObj);
+    copy_from_iterator(header.numTLVs);
+    copy_from_iterator(header.subFrameNumber);
 
     // header.magic_word = boost::endian::little_to_native(header.magic_word);
     header.version = boost::endian::little_to_native(header.version);
