@@ -3,7 +3,10 @@
 DataUART::DataUART(boost::asio::io_context &io_context, const std::string &port, uint32_t baud_rate)
     : m_serial_port(io_context, port), m_strand(io_context.get_executor())
 {
+    // m_serial_port.set_option(boost::asio::serial_port::baud_rate(baud_rate));
+    // m_serial_port.set_option(boost::asio::serial_port::stop_bits(boost::asio::serial_port::stop_bits::one));
     m_serial_port.set_option(boost::asio::serial_port_base::baud_rate(baud_rate));
+    m_serial_port.set_option(boost::asio::serial_port_base::stop_bits(boost::asio::serial_port::stop_bits::one));
     std::cout << "Data UART initialized" << std::endl;
     std::cout << "Data UART Port: " << port << std::endl;
     std::cout << "Data UART Baud Rate: " << baud_rate << std::endl;
@@ -15,8 +18,70 @@ void DataUART::start_async_read()
     // boost::asio::async_read(m_serial_port, boost::asio::buffer(m_read_buffer.prepare(1024)),
     //                         boost::asio::bind_executor(m_strand,
     //                                                    std::bind(&DataUART::handle_read, this, std::placeholders::_1, std::placeholders::_2)));
-    auto frame_identifier = std::make_shared<FrameIdentifier>(m_serial_port, std::bind(&DataUART::frame_callback, this, std::placeholders::_1, std::placeholders::_2), UART_MAGIC_STRING);
+
+
+    // check that serial port is open
+    if (!m_serial_port.is_open())
+    {
+        std::cerr << "Data UART: Serial port is not open" << std::endl;
+        return;
+    }
+
+    boost::asio::serial_port::baud_rate baud_option;
+    boost::asio::serial_port::flow_control flow_option;
+    boost::asio::serial_port::parity parity_option;
+    boost::asio::serial_port::stop_bits stop_option;
+    boost::asio::serial_port::character_size char_option;
+
+    m_serial_port.get_option(baud_option);
+    m_serial_port.get_option(flow_option);
+    m_serial_port.get_option(parity_option);
+    m_serial_port.get_option(stop_option);
+    m_serial_port.get_option(char_option);
+
+    // note that:
+    // boost::asio::serial_port::stop_bits::one = 0
+    // boost::asio::serial_port::parity::none = 0
+    // and these match the reference implementation in gui_parser.py settings
+    std::cout
+        << "Data UART: Baud rate: " << baud_option.value() << "\n"
+        << "Data UART: Flow control: " << flow_option.value() << "\n"
+        << "Data UART: Parity: " << parity_option.value() << "\n"
+        << "Data UART: Stop bits: " << stop_option.value() << "\n"
+        << "Data UART: Character size: " << char_option.value() << std::endl;
+
+    auto frame_identifier = std::make_shared<FrameIdentifier>(
+        m_serial_port, std::bind(&DataUART::frame_callback, this, std::placeholders::_1, std::placeholders::_2), 
+        MAGIC_STRING_VECTOR);
     frame_identifier->start();
+    //read_char();
+}
+
+void DataUART::read_char()
+{
+    // asychronously read a single character
+    std::cout << "Data UART: Reading char" << std::endl;
+    // boost::asio::read(m_serial_port, boost::asio::buffer(m_read_buffer.prepare(1)));
+    // auto byte = boost::asio::buffer_cast<const char *>(m_read_buffer.data());
+    // std::cout << "Data UART: Char received: " << byte << std::endl;
+
+    boost::asio::async_read(m_serial_port, boost::asio::buffer(m_read_buffer.prepare(1)),
+                            boost::asio::bind_executor(m_strand,
+                                                       [this](auto error, auto bytesRead)
+                                                       {
+                                                           if (!error)
+                                                           {
+                                                               m_read_buffer.commit(bytesRead);
+                                                               // print read bytes
+                                                               auto byte = boost::asio::buffer_cast<const char *>(m_read_buffer.data());
+                                                               std::cout << "Data UART: Char received: " << byte << std::endl;
+                                                               read_char();
+                                                           }
+                                                           else
+                                                           {
+                                                               std::cerr << "Data UART: Error reading sensor data stream: " << error.message() << std::endl;
+                                                           }
+                                                       }));
 }
 
 void DataUART::frame_callback(const boost::system::error_code &error, std::size_t bytes_transferred)

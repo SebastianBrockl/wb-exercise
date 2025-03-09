@@ -5,7 +5,9 @@
 #include <variant>
 #include <vector>
 
-#pragma pack(push, 1) // Ensure no padding
+
+static const uint8_t MAGIC_BYTES[8] = {0x02, 0x01, 0x04, 0x03, 0x06, 0x05, 0x08, 0x07};
+
 struct FrameHeader
 {
     uint64_t magic_word;     // syncPattern in hex is: ‘02 01 04 03 06 05 08 07’
@@ -18,12 +20,10 @@ struct FrameHeader
     uint32_t numTLVs;        // number of TLVs in this frame
     uint32_t subFrameNumber; // sub-frame number
 };
-#pragma pack(pop)
 
 /**
  * TLV Header
  */
-#pragma pack(push, 1) // Ensure no padding
 struct TlvHeader
 {
     // TLV Type:
@@ -35,13 +35,11 @@ struct TlvHeader
     uint32_t type;   // type of TLV
     uint32_t length; // length of TLV
 };
-#pragma pack(pop)
 
 /**
  * Used to decompress the point cloud data
  * the size of the TLV is sizeof(TlvHeader) + sizeof(PointUnit) * numPoints
  */
-#pragma pack(push, 1) // Ensure no padding
 struct PointUnit
 {
     float elevationUnit; // elevation unit - Multiply each point by this value - used for compression
@@ -50,9 +48,7 @@ struct PointUnit
     float rangeUnit;     // range unit - Multiply each point by this value - used for compression
     float snrUnit;       // snr unit - Multiply each point by this value - used for compression
 };
-#pragma pack(pop)
 
-#pragma pack(push, 1) // Ensure no padding
 struct PointStruct
 {
     int8_t elevation; // elevation
@@ -61,13 +57,11 @@ struct PointStruct
     int16_t doppler;  // doppler
     int16_t snr;      // snr
 };
-#pragma pack(pop)
 
 /**
  * TLV size: sizeof (tlvHeaderStruct) + sizeof (trackerProc_Target) x numberOfTargets
  * he Target List TLV consists of an array of targets. Each target object is defined as given below.
  */
-#pragma pack(push, 1) // Ensure no padding
 struct Target
 {
     uint32_t trackId;      // track id
@@ -84,7 +78,6 @@ struct Target
     float g;               // Gating function gain
     float confidencelevel; // Confidence level
 };
-#pragma pack(pop)
 
 /**
  * Size: sizeof (tlvHeaderStruct) + sizeof(uint8) x numberOfPoints (NOTE: here the number of points are for frame n-1)
@@ -96,23 +89,19 @@ struct Target
  * 254: Point not associated, located outside boundary of interest
  * 255: Point not associated, considered noise
  */
-#pragma pack(push, 1) // Ensure no padding
 struct TargetIndex
 {
     uint8_t trackId; // target id
 };
-#pragma pack(pop)
 
 /**
  * Size: sizeof(tlvHeaderStruct) + sizeof(uint32)
  * The Presence Indication TLV consists of a single uint32 corresponding to the number of presences detected.
  */
-#pragma pack(push, 1) // Ensure no padding
 struct Precences
 {
     uint32_t presences; // number of precences detected
 };
-#pragma pack(pop)
 
 /**
  * Size: sizeof(tlvHeaderStruct) + (sizeof(targetHeight)) x numberOfTargets
@@ -121,55 +110,43 @@ struct Precences
  * then the maximum Z estimate given as a float and the minimum Z estimate given as a float.
  * For a more detailed explanation of the height estimation algorithm, see the 3D People Tracking Implementation Guide.
  */
-#pragma pack(push, 1) // Ensure no padding
 struct TargetHeight
 {
     uint8_t trackId; // track id
     float maxZ;      // maximum height estimate
     float minZ;      // minimum height estimate
 };
-#pragma pack(pop)
 
-#pragma pack(push, 1) // Ensure no padding
 struct CompressedPointCloudTLV
 {
     TlvHeader header;
     PointUnit pointUnit;
     PointStruct points[];
 };
-#pragma pack(pop)
 
-#pragma pack(push, 1) // Ensure no padding
 struct TargetListTLV
 {
     TlvHeader header;
     Target targets[];
 };
-#pragma pack(pop)
 
-#pragma pack(push, 1) // Ensure no padding
 struct targetIndexTLV
 {
     TlvHeader header;
     TargetIndex targetIndex[];
 };
-#pragma pack(pop)
 
-#pragma pack(push, 1) // Ensure no padding
 struct PresenceIndicationTLV
 {
     TlvHeader header;
     Precences presences;
 };
-#pragma pack(push, 1) // Ensure no padding
 
-#pragma pack(push, 1) // Ensure no padding
 struct TargetHeightTLV
 {
     TlvHeader header;
     TargetHeight targetHeight[];
 };
-#pragma pack(pop)
 
 using TLVs = std::variant<CompressedPointCloudTLV, TargetListTLV, targetIndexTLV, PresenceIndicationTLV, TargetHeightTLV>;
 struct Frame

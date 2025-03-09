@@ -9,10 +9,15 @@
 #include <vector>
 #include <memory>
 #include <istream>
+#include <atomic>
 
 // MAGIC STRING SIGNIFIES START OF DATA FRAME
 static const uint8_t UART_MAGIC_BYTES[8] = {0x02, 0x01, 0x04, 0x03, 0x06, 0x05, 0x08, 0x07};
-static const std::string UART_MAGIC_STRING = "\x02\x01\x04\x03\x06\x05\x08\x07";
+static const std::string UART_MAGIC_STRING(reinterpret_cast<const char *>(UART_MAGIC_BYTES), sizeof(UART_MAGIC_BYTES)); // = "\x02\x01\x04\x03\x06\x05\x08\x07";
+static const std::vector<uint8_t> MAGIC_STRING_VECTOR = {0x02, 0x01, 0x04, 0x03, 0x06, 0x05, 0x08, 0x07};
+
+// static const std::string UART_MAGIC_STRING = "\x0201040306050807";
+
 class DataUART
 {
 public:
@@ -21,16 +26,21 @@ public:
              uint32_t baud_rate);
 
     void start_async_read();
+    void read_char();
 
     void frame_callback(const boost::system::error_code &error, std::size_t bytes_transferred);
 
-private:
+    bool get_in_progress() const { return m_in_progress.load(std::memory_order_relaxed); };
 
+private:
     void handle_read(const boost::system::error_code &error,
                      std::size_t bytes_transferred);
     void handle_frame(std::shared_ptr<std::vector<uint8_t>> frame);
 
     void find_frame_start();
+
+    void set_in_progress(bool is_transmitting) { m_in_progress.store(is_transmitting, std::memory_order_relaxed); };
+
     std::size_t match_magic_string(boost::asio::streambuf &readBuffer);
 
     uint32_t extractUint32(const std::vector<uint8_t> &buffer, size_t offset);
@@ -42,6 +52,7 @@ private:
     std::vector<uint8_t> m_frame_buffer;
     bool m_collecting_frame = false;
     uint32_t m_frame_length = 0;
+    std::atomic<bool> m_in_progress{false};
 };
 
 #endif // DATA_UART_H
