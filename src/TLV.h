@@ -148,11 +148,11 @@ struct TargetHeightTLV
     TargetHeight targetHeight[];
 };
 
-using TLVs = std::variant<CompressedPointCloudTLV, TargetListTLV, targetIndexTLV, PresenceIndicationTLV, TargetHeightTLV>;
+using tlv = std::variant<CompressedPointCloudTLV, TargetListTLV, targetIndexTLV, PresenceIndicationTLV, TargetHeightTLV>;
 struct Frame
 {
     FrameHeader header;
-    std::vector<TLVs> tlvs;
+    std::vector<tlv> tlvs;
 };
 
 #endif // TLV_H
