@@ -61,3 +61,39 @@ add_custom_target(docker-push
     COMMAND docker push ${LOCAL_DOCKER_REGISTRY}/mistral-demo
     DEPENDS docker-build
 )
+
+# # Add Google Test
+# include(FetchContent)
+# FetchContent_Declare(
+#   googletest
+#   URL https://github.com/google/googletest/archive/refs/tags/release-1.12.1.zip
+# )
+# # For Windows: Prevent overriding the parent project's compiler/linker settings
+# set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+# FetchContent_MakeAvailable(googletest)
+
+find_package(GTest REQUIRED)
+# target_link_libraries(my_test PRIVATE GTest::GTest GTest::Main)
+
+
+enable_testing()
+
+# Add test executable
+add_executable(
+  util_tests
+  tests/util_tests.cpp
+)
+
+# Link test executable with Google Test
+target_link_libraries(
+  util_tests
+  gtest_main
+)
+
+# Ensure test executable is built with native compiler
+set_target_properties(util_tests PROPERTIES
+    CMAKE_CXX_COMPILER g++
+)
+
+include(GoogleTest)
+gtest_discover_tests(util_tests)

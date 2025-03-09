@@ -1,23 +1,34 @@
-
 BUILD_DIR=build
+NATIVE_BUILD_DIR=build-native
 
-# CMake Build
+# Cross-compile main application
 build:
 	mkdir -p $(BUILD_DIR)/bin
-	cd $(BUILD_DIR) && cmake .. 
+	# cd $(BUILD_DIR) && cmake ..
+	cd $(BUILD_DIR) && cmake .. -DCMAKE_TOOLCHAIN_FILE=../toolchain-arm.cmake
 	cd ..
 	cmake --build $(BUILD_DIR) --target docker-build
 
-# CMake Build
+# Push Docker Image
 push:
 	mkdir -p $(BUILD_DIR)/bin
-	cd $(BUILD_DIR) && cmake .. 
+	cd $(BUILD_DIR) && cmake ..
+	# cd $(BUILD_DIR) && cmake .. -DCMAKE_TOOLCHAIN_FILE=../toolchain-arm.cmake
 	cd ..
 	cmake --build $(BUILD_DIR) --target docker-push
 
-# Clean build files
-clean:
-	rm -rf $(BUILD_DIR)
+# Run Tests (builds natively)
+test:
+	rm -rf $(NATIVE_BUILD_DIR)  # Ensure a clean native build
+	mkdir -p $(NATIVE_BUILD_DIR)/bin
+	cd $(NATIVE_BUILD_DIR) && cmake .. -DCMAKE_TOOLCHAIN_FILE=../toolchain-native.cmake
+	cd ..
+	cmake --build $(NATIVE_BUILD_DIR) --target util_tests
+	cd $(NATIVE_BUILD_DIR) && ctest --output-on-failure
 
-# Phony targets (tells make that they don't produce files)
-.PHONY: build push clean
+# Clean both builds
+clean:
+	rm -rf $(BUILD_DIR) $(NATIVE_BUILD_DIR)
+
+# Phony targets
+.PHONY: build push clean test

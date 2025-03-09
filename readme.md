@@ -99,7 +99,8 @@ sudo apt-get install -y \
     libboost-all-dev \
     libwebsocketpp-dev \
     libspdlog-dev \
-    nlohmann-json3-dev
+    nlohmann-json3-dev \
+    libgtest-dev
 ```
 
 You can build the project conventionally using cmake, or use the provided `make` helpers.
