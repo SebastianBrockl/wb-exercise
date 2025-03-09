@@ -35,7 +35,7 @@ private:
     int m_websocket_port;
 
     RadarConfig m_radar_config;
-    WebSocketServer m_ws_server;
+    msg::WebSocketServer m_ws_server;
     DataUART m_data_uart;
     ConfigUART m_config_uart;
     std::thread m_ws_thread;

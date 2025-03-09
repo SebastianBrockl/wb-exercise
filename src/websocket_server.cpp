@@ -1,5 +1,7 @@
 #include "websocket_server.h"
 
+using namespace msg;
+
 WebSocketServer::WebSocketServer(boost::asio::io_context &io_context, uint16_t port)
 {
     m_server.init_asio(&io_context);
@@ -102,4 +104,35 @@ void WebSocketServer::stop()
                        websocketpp::close::status::going_away,
                        "Server shutting down");
     }
+}
+
+// // IMessagePublisher interface
+void WebSocketServer::publish_frame(const Frame &frame)
+{
+    // NOP
+}
+
+void WebSocketServer::publish_pointcloud(const CompressedPointCloudTLV &pointcloud)
+{
+    // NOP
+}
+
+void WebSocketServer::publish_target_list(const TargetListTLV &target_list)
+{
+    // NOP
+}
+
+void WebSocketServer::publish_target_index(const targetIndexTLV &target_index)
+{
+    // NOP
+}
+
+void WebSocketServer::publish_presence_indication(const PresenceIndicationTLV &presence_indication)
+{
+    // NOP
+}
+
+void WebSocketServer::publish_target_height(const TargetHeightTLV &target_height)
+{
+    // NOP
 }
