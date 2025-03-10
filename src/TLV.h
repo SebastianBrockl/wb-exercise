@@ -132,19 +132,19 @@ struct CompressedPointCloudTLV
 {
     TlvHeader header;
     PointUnit pointUnit;
-    std::vector<PointStruct> points();
+    std::vector<PointStruct> points{};
 };
 
 struct TargetListTLV
 {
     TlvHeader header;
-    std::vector<Target> targets();
+    std::vector<Target> targets{};
 };
 
 struct targetIndexTLV
 {
     TlvHeader header;
-    std::vector<TargetIndex> targetIndex();
+    std::vector<TargetIndex> targetIndex{};
 };
 
 struct PresenceIndicationTLV
@@ -156,7 +156,7 @@ struct PresenceIndicationTLV
 struct TargetHeightTLV
 {
     TlvHeader header;
-    std::vector<TargetHeight> targetHeight();
+    std::vector<TargetHeight> targetHeight{};
 };
 
 using tlv = std::variant<FrameHeader, TargetListTLV, targetIndexTLV, PresenceIndicationTLV, TargetHeightTLV>;
