@@ -21,6 +21,14 @@ struct FrameHeader
     uint32_t subFrameNumber; // sub-frame number
 };
 
+enum class TLVType : uint32_t {
+    PointCloud         = 1020,
+    TargetObjectList   = 1010,
+    TargetIndex        = 1011,
+    TargetHeight       = 1012,
+    PresenceIndication = 1021
+};
+
 /**
  * TLV Header
  */
@@ -32,9 +40,10 @@ struct TlvHeader
     // 1011 = Target Index
     // 1012 = Target Height
     // 1021 = Presence Indication
-    uint32_t type;   // type of TLV
+    TLVType type;   // type of TLV
     uint32_t length; // length of TLV
 };
+
 
 /**
  * Used to decompress the point cloud data
@@ -42,6 +51,8 @@ struct TlvHeader
  */
 struct PointUnit
 {
+    // NOTE floats are technically not architecture independent, although 32 bit floats are
+    // very common. std::float32_t would necessitate using c++23, and I would rather not. 
     float elevationUnit; // elevation unit - Multiply each point by this value - used for compression
     float azimuthUnit;   // azimuth unit - Multiply each point by this value - used for compression
     float dopplerUnit;   // doppler unit - Multiply each point by this value - used for compression
@@ -121,19 +132,19 @@ struct CompressedPointCloudTLV
 {
     TlvHeader header;
     PointUnit pointUnit;
-    PointStruct points[];
+    std::vector<PointStruct> points();
 };
 
 struct TargetListTLV
 {
     TlvHeader header;
-    Target targets[];
+    std::vector<Target> targets();
 };
 
 struct targetIndexTLV
 {
     TlvHeader header;
-    TargetIndex targetIndex[];
+    std::vector<TargetIndex> targetIndex();
 };
 
 struct PresenceIndicationTLV
@@ -145,10 +156,10 @@ struct PresenceIndicationTLV
 struct TargetHeightTLV
 {
     TlvHeader header;
-    TargetHeight targetHeight[];
+    std::vector<TargetHeight> targetHeight();
 };
 
-using tlv = std::variant<CompressedPointCloudTLV, TargetListTLV, targetIndexTLV, PresenceIndicationTLV, TargetHeightTLV>;
+using tlv = std::variant<FrameHeader, TargetListTLV, targetIndexTLV, PresenceIndicationTLV, TargetHeightTLV>;
 struct Frame
 {
     FrameHeader header;
