@@ -21,14 +21,18 @@ std::vector<tlv> MessageHandler::deserialize_message_data(const std::vector<uint
 {
     if (message_data.size() < sizeof(FrameHeader))
     {
-        auto message = "MessageHandler: Message data too short for header deserialization! "
-        + "Expected at least " + std::to_string(sizeof(FrameHeader)) + " bytes, got " + std::to_string(message_data.size());
+        auto message =
+            std::string("MessageHandler: Message data too short for header deserialization! ") + "Expected at least " + std::to_string(sizeof(FrameHeader)) + " bytes, got " + std::to_string(message_data.size());
         throw std::runtime_error(message);
     }
     std::vector<tlv> tlvs;
     // grab first 40 bytes to form header
     auto iterator = message_data.begin();
     auto header = util::deserialize_header(message_data, iterator);
+    m_frame_header = header;
+    m_message_contents.push_back(header);
+
+    return tlvs;
 }
 
 void MessageHandler::handle_message(const std::vector<uint8_t> &message)

@@ -44,7 +44,8 @@ add_executable(mistral-demo
     src/config_uart.cpp 
     src/frame_identifier.cpp 
     src/TLV.h 
-    src/i_message_publisher.h)
+    src/i_message_publisher.h
+    src/message_handler.cpp)
 
 target_compile_options(mistral-demo PRIVATE -Wall -Wextra -Werror -Wno-unused-parameter -Wno-unused-variable)
 target_link_libraries(mistral-demo ${Boost_LIBRARIES} nlohmann_json::nlohmann_json -static-libgcc -static-libstdc++ -static)
